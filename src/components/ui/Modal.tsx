@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 interface Props {
   open: boolean
@@ -18,7 +19,12 @@ export default function Modal({ open, onClose, title, children }: Props) {
 
   if (!open) return null
 
-  return (
+  // Rendered via portal straight to <body> — several callers live inside a
+  // scrollable `.scroll-area` ancestor, and mobile Safari resolves touch-drag
+  // gestures by walking the DOM tree rather than the visual stacking order.
+  // Without the portal, dragging the sheet's handle scrolls that ancestor
+  // instead of the modal, even though the modal renders fixed on top.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       role="dialog"
@@ -55,6 +61,7 @@ export default function Modal({ open, onClose, title, children }: Props) {
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
