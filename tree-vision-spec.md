@@ -102,7 +102,9 @@ Catalog {
 }
 ```
 
-> **Seed data note for Claude Code:** the working prototype `cyber-character-builder.html` already encodes a full, tested set of `SKILLS` (26), `CLASSES` (~40), and `QUESTS` (~40 catalog items) as plain arrays. Lift those arrays as the v1 seed catalog rather than re-authoring. This doc defines the *rules*; the prototype carries the *starting data*.
+> **Seed data note for Claude Code:** the working prototype `cyber-character-builder.html` already encodes a full, tested set of `SKILLS` (26) and `CLASSES` (~40) as plain arrays. Lift those arrays as the v1 seed catalog rather than re-authoring. This doc defines the *rules*; the prototype carries the *starting data*.
+>
+> **Update (post-launch content pass):** `QUESTS`/`CATALOG` has since grown well past the prototype's ~40 entries to **187 catalog items** in `src/data/catalog.ts` — 68 certs, 17 degrees, 61 side quests/projects (with explicit coverage of every skill, including the previously-thin Rare Arts), 26 faction roles across a full seniority ladder, and 15 career milestones. Treat 187 as the current floor, not a ceiling — the catalog is meant to keep growing.
 
 ---
 
@@ -333,7 +335,7 @@ Persistent shell on every screen: a top `StatusBar` (name, overall level, formal
 
 Net effect: **Factions, gold, reputation, and a timeline-equivalent (Logs) all shipped in this redesign pass, ahead of the original Phase 2 schedule.** Inventory's Tools/Badges trophy kinds and the World Map unlock-graph visualization remain unbuilt (§12, §13).
 
-### 14.2 Visual identity (current — replaces "celestial gold/cyan/purple, Cinzel + Cormorant")
+### 14.2 Visual identity (superseded again — see 14.3 below)
 
 - **Layers, not flat black:** `void` (page bg) → `panel` → `panel-raised`, every module built on a `.panel`/`.panel-raised` card primitive with a subtle inset highlight + drop shadow for elevation.
 - **Fonts:** Space Grotesk (display/headings) + Inter (body) + JetBrains Mono (numbers, timestamps, deltas, IDs — *only* in those contexts, never body prose).
@@ -341,6 +343,19 @@ Net effect: **Factions, gold, reputation, and a timeline-equivalent (Logs) all s
 - Three-layer design intent driving all of the above: RPG skill-tree feel is primary, dev/terminal aesthetic is secondary (mono scoped tightly), modern dashboard readability is the non-negotiable foundation — clarity before immersion before aesthetic.
 
 Mobile-first throughout (the primary device) — unchanged.
+
+### 14.3 Visual identity v2 — Skyrim / fantasy-medieval overhaul (current)
+
+Replaced the modern-dashboard look in §14.2 wholesale, per direct user request for "more fantasy medieval Skyrim style." The `panel`/`panel-raised` layering structure from §14.2 stays — only the skin changed:
+
+- **Fonts:** Cinzel (display/headings, the classic engraved-stone-tablet fantasy serif) + EB Garamond (body) + JetBrains Mono (numbers/timestamps, unchanged role).
+- **Palette — gold is now the dominant identity color**, not a legacy accent: aged brass/dragon-priest gold (`gold`) carries panel borders, active states, and primary buttons. The old cyan/purple/green/amber token *names* were kept (so semantic classes across components didn't need touching) but their hex values were re-pointed to fantasy equivalents — cyan→frost steel blue, purple→arcane violet, green→moss/verdant emerald, amber→ember orange. Backgrounds shifted from near-black-blue to warm near-black-brown (old stone/dungeon feel). Text colors shifted from cool "starlight/mist" grays to warm parchment/aged-paper tones.
+- **Background:** the old starfield+aurora treatment became a torchlit-stone gradient with rising embers (warm particles drifting upward, recolored from the old twinkling-star particles) and a vignette, instead of a cool deep-space look.
+- **Panels:** carved-stone-tablet feel — thin brass/gold inlay borders instead of flat dark borders; `panel-title` text now renders in dim gold rather than gray. A `.corner-flourish` utility adds hairline brass corner brackets to hero panels (used on the passcode gate, available for other hero moments).
+- **Attributes module redesign:** the old static hexagonal radar chart (`AttributeRadar.tsx`) was replaced with a single continuous horizontally-scrollable "chain" — six rune-medallion nodes (each a radial gauge ring) connected by a brass chain line, freely draggable left/right with no pagination dots and no per-swipe section jumps. This was a deliberate fix: the old radar (and the still-unconverted `SkillConstellation` category swiper, §14.1) used a "new section per swipe" idiom the user explicitly didn't want repeated for attributes. **Flag for Claude Code:** `SkillConstellation`/`CategoryCluster` (Skill Trees module) still uses the old swipe-per-category-with-dots pattern and has not yet been converted to the same continuous-pan idiom — that conversion is open, not done.
+- **Quest/Logbook "logged" state:** `QuestCard` now shows a green "✓ Logged" badge and disables the Log button once a non-repeatable catalog item has an entry in `character.log`; repeatable items instead show "logged ×N" and stay loggable. This was missing before and is now considered baseline behavior, not optional polish.
+
+Mobile-first throughout — unchanged.
 
 ---
 
@@ -377,12 +392,17 @@ These were in the original design doc. Each is cut because it contradicts "deter
 
 **Phase 2 — Career layer (shipped ahead of schedule, in the six-module redesign — §14.1).** Factions/jobs with real per-faction rep+role aggregation, gold totals, credentials wall (Tools/Badges trophy kinds still missing, §12), a Logs module covering the timeline use case, PWA install (manifest + service worker via `vite-plugin-pwa`, confirmed building cleanly). **Remaining from original Phase 2 scope:** multiple character slots (not started), rep tier breakpoints (§11), Tools/Badges trophies (§12).
 
-**Phase 3 — Polish & depth (not started).** World-map graph visualization of the unlock graph (§13), richer + community-extensible catalog (JSON catalog files), per-user saved custom catalog, animation/sound polish, accessibility pass, fix the §6 leveling rounding bug.
+**Phase 3 — Polish & depth (partially started).** Catalog breadth (§3 update) shipped early/out of order — 187 entries, well past the original "richer catalog" goal. Visual identity overhaul (§14.3, Skyrim/fantasy skin) also shipped early. Still open: world-map graph visualization of the unlock graph (§13), community-extensible JSON catalog format, per-user saved custom catalog, animation/sound polish, accessibility pass, fix the §6 leveling rounding bug, convert `SkillConstellation` to the continuous-pan idiom used by the new Attributes chain (§14.3).
 
 ### Suggested stack (Claude Code's call, but a recommendation)
 - **React + Vite + Tailwind**, single-page, localStorage, wrapped as a **PWA**. Pragmatic path to a downloadable, installable, offline app with no backend.
 - If App Store / Play Store distribution is later wanted: **Expo / React Native** reusing the same engine logic. Heavier; not needed for v1.
 - Keep the **engine pure and framework-agnostic** (a `deriveCharacter(log)` module with no UI deps) so it's trivially testable and portable.
+
+### Deployment (live)
+- Hosted on **GitHub Pages** at `https://doctorswanson.github.io/tree/`, auto-deployed via a GitHub Actions workflow (`.github/workflows/deploy.yml`) on every push to `main`. `vite.config.ts` sets `base: '/tree/'` to match the Pages subpath; `index.html` uses `%BASE_URL%`-prefixed asset paths so icons/manifest resolve correctly under that subpath.
+- Free-tier GitHub Pages requires the repo to be **public**; there is no paid-free path to a private repo + free Pages. Accepted tradeoff: the GitHub profile (`doctorswanson`) carries no name/bio/email/location, so the only identity thread is the username itself.
+- A client-side **passcode gate** (`src/components/layout/PasscodeGate.tsx`) wraps the entire app at the React root (`main.tsx`), before `CharacterProvider`/`App` ever mount. It compares a SHA-256 hash of user input against a baked-in hash constant (never the plaintext) and persists the unlock via `localStorage`. This is an explicit deterrent against casual link-stumblers, **not real security** — it's client-side JS in a public repo, so a determined visitor could read the source and bypass it. Acceptable given the actual threat model: there is no backend and no shared data, so the worst case of a bypass is a stranger creating their *own* throwaway local character, not exposure of the real user's data.
 
 ---
 
@@ -398,4 +418,4 @@ These were in the original design doc. Each is cut because it contradicts "deter
 
 ---
 
-*End of spec. The prototype `cyber-character-builder.html` is the canonical reference for seed data (SKILLS / CLASSES / QUESTS) and visual identity; this document governs architecture, rules, and scope.*
+*End of spec. The prototype `cyber-character-builder.html` is the canonical reference for original seed `SKILLS`/`CLASSES` and the pre-§14.3 visual identity baseline; this document — including its later updates (§3, §14.3, §17) — governs current architecture, rules, scope, and content.*
