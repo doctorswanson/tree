@@ -404,6 +404,9 @@ These were in the original design doc. Each is cut because it contradicts "deter
 - Free-tier GitHub Pages requires the repo to be **public**; there is no paid-free path to a private repo + free Pages. Accepted tradeoff: the GitHub profile (`doctorswanson`) carries no name/bio/email/location, so the only identity thread is the username itself.
 - A client-side **passcode gate** (`src/components/layout/PasscodeGate.tsx`) wraps the entire app at the React root (`main.tsx`), before `CharacterProvider`/`App` ever mount. It compares a SHA-256 hash of user input against a baked-in hash constant (never the plaintext) and persists the unlock via `localStorage`. This is an explicit deterrent against casual link-stumblers, **not real security** — it's client-side JS in a public repo, so a determined visitor could read the source and bypass it. Acceptable given the actual threat model: there is no backend and no shared data, so the worst case of a bypass is a stranger creating their *own* throwaway local character, not exposure of the real user's data.
 
+### Known-fixed bugs (mobile)
+- **Modal drag/scroll bug (fixed):** `Modal` (`src/components/ui/Modal.tsx`) used to render as a normal nested child wherever it was called from — and several callers (`QuestBoard`, `SkillConstellation`) live inside the scrollable `<main class="scroll-area">` container. Mobile Safari resolves touch-drag gestures by walking the DOM tree, not visual stacking order, so dragging the sheet's handle scrolled the screen *behind* the modal instead of the modal's own content. Fixed by rendering `Modal` through a `createPortal` straight to `document.body`, removing it from any scrollable ancestor's DOM subtree regardless of which component invokes it. Verified: scrolling inside the modal now moves the modal's own content while the background stays put.
+
 ---
 
 ## 18. Open decisions (flag before/while building)
