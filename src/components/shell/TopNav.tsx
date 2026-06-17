@@ -35,7 +35,7 @@ export default function TopNav({ active, onChange, characterName, title, level, 
           ))}
         </nav>
         <span className="hidden md:inline font-mono text-[10px] text-meta border-l border-shadow/60 pl-3">
-          {activeSubtitle}
+          // {activeSubtitle}
         </span>
       </div>
 

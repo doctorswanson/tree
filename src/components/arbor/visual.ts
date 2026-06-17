@@ -5,15 +5,15 @@
 import type { FocusState } from '@/engine/types'
 
 export const FOCUS_OPACITY: Record<FocusState, number> = {
-  locked: 0.45,
-  available: 0.78,
+  locked: 0.4,
+  available: 0.72,
   active: 1,
 }
 
 export const EDGE_BASE_OPACITY: Record<FocusState, number> = {
-  locked: 0.22,
-  available: 0.45,
-  active: 0.8,
+  locked: 0.07,
+  available: 0.16,
+  active: 0.4,
 }
 
 /** Applied to anything outside the current hover/selection chain. */
@@ -23,4 +23,4 @@ export const DIM_MULTIPLIER = 0.3
 export const ZOOM_REVEAL_THRESHOLD = 0.42
 
 /** Opacity floor applied to all edges once zoomed out past the threshold. */
-export const ZOOM_REVEAL_FLOOR = 0.35
+export const ZOOM_REVEAL_FLOOR = 0.22

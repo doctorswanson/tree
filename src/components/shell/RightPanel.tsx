@@ -24,7 +24,7 @@ const FOCUS_LABEL: Record<string, { label: string; hint: string }> = {
 export default function RightPanel({ state, selection, onLogNode }: Props) {
   if (!selection) {
     return (
-      <aside className="w-80 shrink-0 border-l border-shadow/60 bg-panel/40 p-4 flex items-center justify-center">
+      <aside className="w-80 shrink-0 border-l border-shadow/60 bg-panel/40 p-3 flex items-center justify-center">
         <p className="font-mono text-xs text-meta text-center leading-relaxed">
           Select a node in the Arbor<br />to see what you can achieve.
         </p>
@@ -36,7 +36,7 @@ export default function RightPanel({ state, selection, onLogNode }: Props) {
     const bough = state.boughs.find((b) => b.id === selection.id)
     if (!bough) return null
     return (
-      <aside className="w-80 shrink-0 border-l border-shadow/60 bg-panel/40 scroll-area p-4 flex flex-col gap-4">
+      <aside className="w-80 shrink-0 border-l border-shadow/60 bg-panel/40 scroll-area p-3 flex flex-col gap-3">
         <div>
           <p className="font-display text-lg font-semibold" style={{ color: bough.color }}>{bough.name}</p>
           <p className="font-body text-sm text-mist mt-1">{bough.desc}</p>
@@ -71,8 +71,8 @@ export default function RightPanel({ state, selection, onLogNode }: Props) {
                   <span className="font-mono text-[10px] text-meta">{pct}%</span>
                 </div>
                 <p className="font-mono text-[10px] text-meta mb-2">{layer.hint}</p>
-                <div className="h-1 rounded-full bg-shadow/40 overflow-hidden mb-3">
-                  <div className="h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${pct}%`, backgroundColor: bough.color }} />
+                <div className="h-1 rounded-full bg-shadow/70 border border-shadow overflow-hidden mb-3">
+                  <div className="h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${pct}%`, backgroundColor: bough.color, boxShadow: `0 0 4px ${bough.color}aa` }} />
                 </div>
                 <div className="flex flex-col gap-2">
                   {layerBranches.map((branch) => (
@@ -111,7 +111,7 @@ export default function RightPanel({ state, selection, onLogNode }: Props) {
   const focus = FOCUS_LABEL[node.focusState]
 
   return (
-    <aside className="w-80 shrink-0 border-l border-shadow/60 bg-panel/40 scroll-area p-4 flex flex-col gap-4">
+    <aside className="w-80 shrink-0 border-l border-shadow/60 bg-panel/40 scroll-area p-3 flex flex-col gap-3">
       <div>
         <p className="font-mono text-[10px] text-meta uppercase tracking-wider">{node.boughName} / {node.branchName}</p>
         <p className="font-display text-lg font-semibold text-starlight mt-1">{node.name}</p>

@@ -100,21 +100,26 @@
 
   /* ── Panels — the base structural unit every module is built from ── */
   .panel {
-    @apply rounded-lg border bg-panel;
+    @apply rounded-md border bg-panel;
     border-color: rgba(57,255,138,0.14);
     box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 1px 0 0 rgba(57,255,138,0.04) inset, 0 8px 24px -10px rgba(0,0,0,0.7);
   }
   .panel-raised {
-    @apply rounded-lg border bg-panel-raised;
+    @apply rounded-md border bg-panel-raised;
     border-color: rgba(57,255,138,0.2);
     box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 1px 0 0 rgba(57,255,138,0.06) inset, 0 14px 32px -12px rgba(0,0,0,0.75);
   }
   .panel-header {
-    @apply flex items-center justify-between px-4 py-3 border-b;
+    @apply flex items-center justify-between px-3 py-2 border-b;
     border-color: rgba(57,255,138,0.12);
   }
   .panel-title {
-    @apply font-display text-xs font-semibold tracking-[0.2em] uppercase text-accent/80;
+    @apply font-display text-[11px] font-semibold tracking-[0.18em] uppercase text-accent/80 flex items-center gap-1.5;
+  }
+  .panel-title::before {
+    content: '▸';
+    color: rgba(57, 255, 138, 0.55);
+    font-size: 9px;
   }
 
   /* ── Node / rank progress bar ── */
@@ -133,12 +138,23 @@
 
   /* ── Top nav tabs ── */
   .tab-item {
-    @apply flex items-center gap-2 px-4 h-10 rounded-md
+    @apply relative flex items-center gap-2 px-4 h-10 rounded-md
            text-meta transition-colors duration-150 select-none cursor-pointer
            font-display text-sm tracking-wide;
   }
   .tab-item.active {
     @apply text-accent bg-accent/10;
+  }
+  .tab-item.active::after {
+    content: '';
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 2px;
+    background: #39ff8a;
+    box-shadow: 0 0 8px rgba(57, 255, 138, 0.8);
   }
   .tab-item:hover:not(.active) {
     @apply text-mist bg-white/5;
