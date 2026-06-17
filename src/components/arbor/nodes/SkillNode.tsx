@@ -17,7 +17,7 @@ export default function SkillNode({ data, selected }: NodeProps<Node<Data>>) {
   const opacity = dim ? baseOpacity * DIM_MULTIPLIER : baseOpacity
   const Icon = node.repeatable ? BOUGH_ICONS[node.boughId] : Award
 
-  const stroke = active ? boughColor : node.focusState === 'available' ? `${boughColor}88` : '#3a4750'
+  const stroke = active ? boughColor : node.focusState === 'available' ? `${boughColor}88` : `${boughColor}45`
   const glow = dim
     ? undefined
     : selected
@@ -61,7 +61,7 @@ export default function SkillNode({ data, selected }: NodeProps<Node<Data>>) {
         />
       </div>
       <span
-        className={`font-mono text-[10px] mt-1.5 text-center leading-tight ${
+        className={`font-mono text-[10px] mt-1.5 text-center leading-tight opacity-0 group-hover:opacity-100 transition-opacity ${
           active ? 'text-mist' : node.focusState === 'available' ? 'text-mist/80' : 'text-meta'
         }`}
       >

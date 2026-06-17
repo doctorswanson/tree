@@ -107,24 +107,33 @@ function ArborGraphInner({ boughs, selection, onSelect }: Props) {
             : nodeFocusLookup[d.nodeId] ?? 'locked'
 
       let opacity = EDGE_BASE_OPACITY[fs]
-      let strokeWidth = 1
+      let strokeWidth = 1.5
       let isInChain = false
 
       if (effectiveChain) {
         if (edgeInChain(edge, effectiveChain)) {
-          opacity = 0.85
-          strokeWidth = 2
+          opacity = 0.95
+          strokeWidth = 2.5
           isInChain = true
         } else {
-          opacity = Math.min(opacity, 0.05)
+          opacity = Math.min(opacity, 0.08)
         }
       }
       if (zoomedOut) opacity = Math.max(opacity, ZOOM_REVEAL_FLOOR)
 
+      const color = (edge.style as { stroke?: string } | undefined)?.stroke ?? '#39ff8a'
+      const glowSize = isInChain ? 6 : fs === 'active' ? 4 : 2.5
+
       return {
         ...edge,
         className: isInChain ? 'arbor-edge-flow' : undefined,
-        style: { ...edge.style, strokeOpacity: opacity, strokeWidth, strokeDasharray: isInChain ? '1 7' : '1 5' },
+        style: {
+          ...edge.style,
+          strokeOpacity: opacity,
+          strokeWidth,
+          strokeDasharray: isInChain ? '1 7' : undefined,
+          filter: `drop-shadow(0 0 ${glowSize}px ${color})`,
+        },
       }
     })
   }, [edges, effectiveChain, zoomedOut, boughFocusLookup, branchFocusLookup, nodeFocusLookup])
