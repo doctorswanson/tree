@@ -1,12 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { v4 as uuid } from 'uuid'
-import type { Character, LogEntry, CatalogItem, CharacterState } from '@/engine/types'
+import type { Character, LogEntry, CharacterState } from '@/engine/types'
 import { SCHEMA_VERSION } from '@/engine/types'
 import { deriveCharacter } from '@/engine/derive'
-import { SKILLS } from '@/data/skills'
-import { CLASSES } from '@/data/classes'
-import { CATALOG } from '@/data/catalog'
 
 const STORAGE_KEY = 'tree:character'
 
@@ -34,10 +31,9 @@ interface CharacterContextValue {
   character: Character | null
   state: CharacterState | null
   isReady: boolean
-  createCharacter: (name: string) => void
+  createCharacter: (name: string, avatarStyle?: string) => void
   addLogEntry: (entry: Omit<LogEntry, 'id'>) => void
   removeLogEntry: (id: string) => void
-  saveCustomCatalogItem: (item: CatalogItem) => void
   exportJSON: () => void
   importJSON: (json: string) => boolean
   resetCharacter: () => void
@@ -62,22 +58,16 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
   // Derive CharacterState from log (never stored)
   const state: CharacterState | null = character
-    ? deriveCharacter(
-        character.name,
-        character.log,
-        SKILLS,
-        CLASSES,
-        [...CATALOG, ...character.customCatalog]
-      )
+    ? deriveCharacter(character.name, character.avatarStyle, character.log)
     : null
 
-  const createCharacter = useCallback((name: string) => {
+  const createCharacter = useCallback((name: string, avatarStyle?: string) => {
     const now = new Date().toISOString()
     const c: Character = {
       schemaVersion: SCHEMA_VERSION,
       name,
+      avatarStyle,
       log: [],
-      customCatalog: [],
       createdAt: now,
       updatedAt: now,
     }
@@ -107,19 +97,6 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const saveCustomCatalogItem = useCallback((item: CatalogItem) => {
-    setCharacter((prev) => {
-      if (!prev) return prev
-      // Replace existing item with same id, or append
-      const existing = prev.customCatalog.findIndex((c) => c.id === item.id)
-      const customCatalog =
-        existing >= 0
-          ? prev.customCatalog.map((c, i) => (i === existing ? item : c))
-          : [...prev.customCatalog, item]
-      return { ...prev, customCatalog, updatedAt: new Date().toISOString() }
-    })
-  }, [])
-
   const exportJSON = useCallback(() => {
     if (!character) return
     const blob = new Blob([JSON.stringify(character, null, 2)], { type: 'application/json' })
@@ -139,8 +116,8 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
       const imported: Character = {
         schemaVersion: parsed.schemaVersion ?? SCHEMA_VERSION,
         name: parsed.name,
+        avatarStyle: parsed.avatarStyle,
         log: parsed.log,
-        customCatalog: parsed.customCatalog ?? [],
         createdAt: parsed.createdAt ?? new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
@@ -163,11 +140,10 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
     createCharacter,
     addLogEntry,
     removeLogEntry,
-    saveCustomCatalogItem,
     exportJSON,
     importJSON,
     resetCharacter,
-  }), [character, state, isReady, createCharacter, addLogEntry, removeLogEntry, saveCustomCatalogItem, exportJSON, importJSON, resetCharacter])
+  }), [character, state, isReady, createCharacter, addLogEntry, removeLogEntry, exportJSON, importJSON, resetCharacter])
 
   return <CharacterContext.Provider value={value}>{children}</CharacterContext.Provider>
 }

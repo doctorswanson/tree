@@ -1,53 +1,61 @@
 import { useState } from 'react'
-import StatusBar from '@/components/shell/StatusBar'
-import ModuleNav from '@/components/shell/ModuleNav'
-import type { ModuleId } from '@/components/shell/ModuleNav'
+import TopNav, { type TabId } from '@/components/shell/TopNav'
+import LeftSidebar from '@/components/shell/LeftSidebar'
+import RightPanel from '@/components/shell/RightPanel'
+import BottomRow from '@/components/shell/BottomRow'
+import ArborGraph, { type ArborSelection } from '@/components/arbor/ArborGraph'
+import LogNodeModal from '@/components/arbor/LogNodeModal'
+import Codex from '@/components/codex/Codex'
 import ProfileModule from '@/components/profile/ProfileModule'
-import SkillConstellation from '@/components/skilltree/SkillConstellation'
-import QuestBoard from '@/components/quests/QuestBoard'
-import ClassGrid from '@/components/classes/ClassGrid'
-import FactionPanel from '@/components/factions/FactionPanel'
-import EventLog from '@/components/logs/EventLog'
 import SettingsDrawer from '@/components/character/SettingsDrawer'
 import { useCharacter } from '@/store/CharacterProvider'
 import Onboarding from '@/components/layout/Onboarding'
 
 export default function App() {
-  const [module, setModule] = useState<ModuleId>('trees')
+  const [tab, setTab] = useState<TabId>('arbor')
+  const [selection, setSelection] = useState<ArborSelection>(null)
+  const [loggingNodeId, setLoggingNodeId] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const { character, isReady } = useCharacter()
+  const { character, state, isReady } = useCharacter()
 
   if (!isReady) return null
+  if (!character || !state) return <Onboarding />
 
-  if (!character) return <Onboarding />
+  const loggingNode = loggingNodeId ? state.nodes[loggingNodeId] ?? null : null
 
   return (
     <div className="relative flex flex-col h-full overflow-hidden bg-void">
-      <StatusBar onOpenSettings={() => setSettingsOpen(true)} />
+      <TopNav
+        active={tab}
+        onChange={setTab}
+        characterName={state.name}
+        title={state.title.title}
+        level={state.overallLevel}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
 
-      <main className="relative z-10 flex-1 scroll-area min-h-0">
-        {module === 'profile'  && <ProfileModule />}
-        {module === 'trees'    && <SkillConstellation />}
-        {module === 'quests'   && <QuestBoard />}
-        {module === 'classes'  && <ClassGrid />}
-        {module === 'factions' && <FactionPanel />}
-        {module === 'logs'     && <EventLog />}
-      </main>
-
-      {module !== 'quests' && (
-        <button
-          className="absolute right-4 bottom-[72px] z-30 w-14 h-14 rounded-full bg-green text-void
-                     text-2xl font-display font-bold flex items-center justify-center shadow-lg
-                     shadow-green/30 active:scale-95 transition-transform"
-          onClick={() => setModule('quests')}
-          aria-label="Log an achievement"
-        >
-          +
-        </button>
+      {tab === 'profile' ? (
+        <ProfileModule />
+      ) : (
+        <>
+          <div className="flex-1 flex min-h-0">
+            <LeftSidebar state={state} />
+            {tab === 'arbor' ? (
+              <ArborGraph boughs={state.boughs} onSelect={setSelection} />
+            ) : (
+              <Codex
+                state={state}
+                selectedNodeId={selection?.kind === 'node' ? selection.id : null}
+                onSelectNode={(id) => setSelection({ kind: 'node', id })}
+              />
+            )}
+            <RightPanel state={state} selection={selection} onLogNode={(id) => setLoggingNodeId(id)} />
+          </div>
+          <BottomRow character={character} state={state} />
+        </>
       )}
 
-      <ModuleNav active={module} onChange={setModule} />
-
+      <LogNodeModal node={loggingNode} onClose={() => setLoggingNodeId(null)} />
       <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   )

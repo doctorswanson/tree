@@ -16,7 +16,7 @@
 
   body {
     @apply bg-void text-starlight font-body;
-    background-color: #0c0a07;
+    background-color: #05070a;
     /* Prevent rubber-band scroll on iOS */
     position: fixed;
     overflow: hidden;
@@ -25,7 +25,7 @@
   }
 
   h1, h2, h3, .font-display {
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
   }
 
   #root {
@@ -53,53 +53,52 @@
 }
 
 @layer components {
-  /* ── Touch-friendly button base ── */
+  /* ── Buttons ── */
   .btn {
     @apply flex items-center justify-center font-display font-semibold text-sm tracking-wide
-           min-h-[44px] px-4 rounded-lg transition-all duration-150 select-none
+           min-h-[44px] px-4 rounded-md transition-all duration-150 select-none
            active:scale-[0.97] cursor-pointer;
   }
   .btn-primary {
-    @apply btn bg-gold text-void;
-    box-shadow: 0 0 0 1px rgba(240,207,107,0.3) inset, 0 2px 8px -2px rgba(201,162,39,0.5);
+    @apply btn bg-accent text-void;
+    box-shadow: 0 0 0 1px rgba(141,255,192,0.3) inset, 0 2px 12px -2px rgba(57,255,138,0.5);
   }
   .btn-ghost {
-    @apply btn border border-shadow text-mist hover:border-gold/60 hover:text-gold;
+    @apply btn border border-shadow text-mist hover:border-accent/50 hover:text-accent;
   }
   .btn-cyan {
     @apply btn bg-cyan/10 border border-cyan/40 text-cyan hover:bg-cyan/20;
   }
-  .btn-green {
-    @apply btn bg-green/10 border border-green/40 text-green hover:bg-green/20;
+  .btn-magenta {
+    @apply btn bg-magenta/10 border border-magenta/40 text-magenta hover:bg-magenta/20;
   }
-  .btn-gold {
+  .btn-amber {
     @apply btn bg-amber/15 border border-amber/40 text-amber hover:bg-amber/25;
   }
   .btn-danger {
-    @apply btn bg-red-900/30 border border-red-700/40 text-red-400 hover:bg-red-800/40;
+    @apply btn bg-danger/15 border border-danger/40 text-danger hover:bg-danger/25;
   }
 
-  /* ── Panels (the base structural unit — every module is built from these) ── */
-  /* Carved-stone tablet with a thin brass inlay border */
+  /* ── Panels — the base structural unit every module is built from ── */
   .panel {
-    @apply rounded-md border bg-panel;
-    border-color: rgba(201,162,39,0.22);
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 1px 0 0 rgba(201,162,39,0.06) inset, 0 8px 20px -8px rgba(0,0,0,0.65);
+    @apply rounded-lg border bg-panel;
+    border-color: rgba(57,255,138,0.14);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 1px 0 0 rgba(57,255,138,0.04) inset, 0 8px 24px -10px rgba(0,0,0,0.7);
   }
   .panel-raised {
-    @apply rounded-md border bg-panel-raised;
-    border-color: rgba(201,162,39,0.3);
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 1px 0 0 rgba(201,162,39,0.08) inset, 0 12px 28px -10px rgba(0,0,0,0.7);
+    @apply rounded-lg border bg-panel-raised;
+    border-color: rgba(57,255,138,0.2);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 1px 0 0 rgba(57,255,138,0.06) inset, 0 14px 32px -12px rgba(0,0,0,0.75);
   }
   .panel-header {
     @apply flex items-center justify-between px-4 py-3 border-b;
-    border-color: rgba(201,162,39,0.18);
+    border-color: rgba(57,255,138,0.12);
   }
   .panel-title {
-    @apply font-display text-xs font-semibold tracking-[0.22em] uppercase text-gold/80;
+    @apply font-display text-xs font-semibold tracking-[0.2em] uppercase text-accent/80;
   }
 
-  /* ── Skill / progress bar ── */
+  /* ── Node / rank progress bar ── */
   .skill-bar-track {
     @apply h-1.5 rounded-full bg-shadow/60 overflow-hidden;
   }
@@ -107,22 +106,23 @@
     @apply h-full rounded-full transition-all duration-700 ease-out;
   }
 
-  /* ── Tier badge ── */
-  .tier-advanced  { @apply text-[10px] font-display font-semibold tracking-widest text-cyan border border-cyan/40 px-2 py-0.5 rounded; }
-  .tier-prestige  { @apply text-[10px] font-display font-semibold tracking-widest text-purple border border-purple/40 px-2 py-0.5 rounded; }
-  .tier-legendary { @apply text-[10px] font-display font-semibold tracking-widest text-amber border border-amber/40 px-2 py-0.5 rounded; }
+  /* ── Rank badge ── */
+  .rank-0 { @apply text-[10px] font-mono font-medium tracking-widest text-meta border border-shadow px-2 py-0.5 rounded; }
+  .rank-1 { @apply text-[10px] font-mono font-medium tracking-widest text-cyan border border-cyan/40 px-2 py-0.5 rounded; }
+  .rank-2 { @apply text-[10px] font-mono font-medium tracking-widest text-amber border border-amber/40 px-2 py-0.5 rounded; }
+  .rank-3 { @apply text-[10px] font-mono font-medium tracking-widest text-accent border border-accent/40 px-2 py-0.5 rounded; }
 
-  /* ── Bottom module nav ── */
+  /* ── Top nav tabs ── */
   .tab-item {
-    @apply flex flex-col items-center gap-0.5 px-1 min-h-[56px] justify-center
+    @apply flex items-center gap-2 px-4 h-10 rounded-md
            text-meta transition-colors duration-150 select-none cursor-pointer
-           flex-1;
+           font-display text-sm tracking-wide;
   }
   .tab-item.active {
-    @apply text-gold;
+    @apply text-accent bg-accent/10;
   }
-  .tab-item-label {
-    @apply text-[9px] font-display font-medium tracking-wide uppercase;
+  .tab-item:hover:not(.active) {
+    @apply text-mist bg-white/5;
   }
 
   /* Monospace metadata — numbers, timestamps, deltas, ids */
@@ -133,44 +133,23 @@
 
 @layer utilities {
   .text-glow-cyan {
-    text-shadow: 0 0 16px rgba(111, 147, 179, 0.45);
+    text-shadow: 0 0 16px rgba(34, 211, 238, 0.45);
   }
-  .text-glow-purple {
-    text-shadow: 0 0 16px rgba(139, 95, 191, 0.45);
-  }
-  .text-glow-green {
-    text-shadow: 0 0 16px rgba(92, 138, 82, 0.45);
+  .text-glow-magenta {
+    text-shadow: 0 0 16px rgba(232, 121, 249, 0.45);
   }
   .text-glow-amber {
-    text-shadow: 0 0 16px rgba(217, 123, 52, 0.45);
+    text-shadow: 0 0 16px rgba(250, 204, 21, 0.45);
   }
-  .text-glow-gold {
-    text-shadow: 0 0 18px rgba(201, 162, 39, 0.5);
+  .text-glow-accent {
+    text-shadow: 0 0 18px rgba(57, 255, 138, 0.5);
   }
-  /* Hairline brass corner flourishes for hero panels */
-  .corner-flourish {
-    position: relative;
-  }
-  .corner-flourish::before,
-  .corner-flourish::after {
-    content: '';
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    border: 1.5px solid rgba(201,162,39,0.55);
-    pointer-events: none;
-  }
-  .corner-flourish::before {
-    top: 6px;
-    left: 6px;
-    border-right: none;
-    border-bottom: none;
-  }
-  .corner-flourish::after {
-    bottom: 6px;
-    right: 6px;
-    border-left: none;
-    border-top: none;
+  /* Subtle engineering-grid backdrop */
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(57,255,138,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(57,255,138,0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
   /* Prevent text selection on touch */
   .no-select {
@@ -180,4 +159,22 @@
   /* Hide scrollbar on horizontally-scrolling strips */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+/* ── React Flow dark theme overrides (the Arbor graph) ── */
+.react-flow__attribution { display: none; }
+.react-flow__controls {
+  box-shadow: none;
+}
+.react-flow__controls-button {
+  background: #0d1117;
+  border-bottom: 1px solid rgba(57,255,138,0.15);
+  color: #8aa39c;
+}
+.react-flow__controls-button:hover {
+  background: #141a21;
+  color: #39ff8a;
+}
+.react-flow__controls-button svg {
+  fill: currentColor;
 }

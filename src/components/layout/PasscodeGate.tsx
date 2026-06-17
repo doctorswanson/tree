@@ -46,12 +46,12 @@ export default function PasscodeGate({ children }: { children: ReactNode }) {
 
       <div className="relative z-10 w-full max-w-sm animate-fade-in">
         <div className="text-center mb-8">
-          <p className="font-display text-4xl text-gold text-glow-gold mb-2">✦</p>
-          <h1 className="font-display text-3xl font-bold text-starlight tracking-[0.1em] mb-1">.tree</h1>
-          <p className="font-body text-mist text-sm">Sealed. Speak the passcode.</p>
+          <p className="font-mono text-3xl text-accent text-glow-accent mb-2">{'>_'}</p>
+          <h1 className="font-display text-3xl font-bold text-starlight tracking-[0.1em] mb-1">tree</h1>
+          <p className="font-body text-mist text-sm">Access restricted. Enter passcode.</p>
         </div>
 
-        <div className="panel-raised p-6 corner-flourish">
+        <div className="panel-raised p-6">
           <label className="block font-display text-[11px] tracking-[0.2em] text-meta uppercase mb-3">
             Passcode
           </label>
@@ -62,7 +62,7 @@ export default function PasscodeGate({ children }: { children: ReactNode }) {
             className={`w-full bg-void/60 border rounded-lg px-4 py-3
                        font-mono text-starlight text-lg tracking-[0.3em] text-center placeholder:text-meta
                        focus:outline-none focus:bg-void transition-colors min-h-[48px]
-                       ${error ? 'border-red-700/70' : 'border-shadow/80 focus:border-gold/60'}`}
+                       ${error ? 'border-danger/70' : 'border-shadow/80 focus:border-accent/60'}`}
             placeholder="••••••"
             value={code}
             onChange={(e) => { setCode(e.target.value); setError(false) }}

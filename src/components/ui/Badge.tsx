@@ -1,18 +1,16 @@
 interface Props {
   children: React.ReactNode
-  color?: 'gold' | 'cyan' | 'purple' | 'green' | 'amber' | 'aurora' | 'mist' | 'red'
+  color?: 'accent' | 'cyan' | 'magenta' | 'amber' | 'mist' | 'danger'
   size?: 'sm' | 'xs'
 }
 
 const COLOR_MAP: Record<string, string> = {
-  gold:   'text-amber  border-amber/40  bg-amber/10',
-  amber:  'text-amber  border-amber/40  bg-amber/10',
-  cyan:   'text-cyan   border-cyan/40   bg-cyan/10',
-  purple: 'text-purple border-purple/40 bg-purple/10',
-  green:  'text-green  border-green/40  bg-green/10',
-  aurora: 'text-green  border-green/40  bg-green/10',
-  mist:   'text-mist   border-shadow/60  bg-shadow/20',
-  red:    'text-red-400 border-red-700/40 bg-red-900/20',
+  accent:  'text-accent  border-accent/40  bg-accent/10',
+  amber:   'text-amber   border-amber/40   bg-amber/10',
+  cyan:    'text-cyan    border-cyan/40    bg-cyan/10',
+  magenta: 'text-magenta border-magenta/40 bg-magenta/10',
+  mist:    'text-mist    border-shadow/60  bg-shadow/20',
+  danger:  'text-danger  border-danger/40  bg-danger/10',
 }
 
 export default function Badge({ children, color = 'mist', size = 'sm' }: Props) {

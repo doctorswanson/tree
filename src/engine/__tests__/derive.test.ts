@@ -1,155 +1,73 @@
 import { describe, it, expect } from 'vitest'
 import { deriveCharacter } from '../derive'
-import type { LogEntry, SkillDef, ClassDef, CatalogItem } from '../types'
+import { ALL_NODES } from '@/data/arbor'
+import type { LogEntry } from '../types'
+import { XP_PER_LOG, RANK_THRESHOLDS } from '../xp'
 
-// ── Minimal fixtures ────────────────────────────────────────────────────────
+const repeatableNode = ALL_NODES.find((n) => n.repeatable)!
+const credentialNode = ALL_NODES.find((n) => !n.repeatable)!
 
-const SKILLS: SkillDef[] = [
-  { id: 'security',           name: 'Security',            category: 'Security',        feeds: ['INT', 'WIS'] },
-  { id: 'offensive-security', name: 'Offensive Security',  category: 'Security',        feeds: ['INT', 'DEX'] },
-  { id: 'networking',         name: 'Networking',          category: 'Infrastructure',  feeds: ['DEX', 'INT'] },
-  { id: 'programming',        name: 'Programming',         category: 'Development',     feeds: ['INT', 'WIL'] },
-]
-
-const CLASSES: ClassDef[] = [
-  { id: 'security-analyst', name: 'Security Analyst', tier: 'advanced',  desc: '', requirements: { 'security': 40 } },
-  { id: 'pen-tester',       name: 'Penetration Tester', tier: 'prestige', desc: '', requirements: { 'security': 70, 'offensive-security': 70, 'networking': 70 } },
-]
-
-const CATALOG: CatalogItem[] = [
-  {
-    id: 'secplus',
-    name: 'CompTIA Security+',
-    type: 'cert',
-    line: 'cert',
-    desc: '',
-    skillXP: { 'security': 120 },
-    credential: 'CompTIA Security+',
-    unlocks: ['cysa'],
-  },
-  {
-    id: 'cysa',
-    name: 'CompTIA CySA+',
-    type: 'cert',
-    line: 'cert',
-    desc: '',
-    skillXP: { 'security': 100 },
-    hidden: true,
-  },
-]
-
-const EMPTY_LOG: LogEntry[] = []
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
-
-function makeEntry(overrides: Partial<LogEntry> = {}): LogEntry {
-  return { id: 'e1', catalogId: null, ...overrides }
+function makeEntry(nodeId: string, overrides: Partial<LogEntry> = {}): LogEntry {
+  return { id: `e-${Math.random()}`, nodeId, ...overrides }
 }
 
-// ── Tests ────────────────────────────────────────────────────────────────────
-
 describe('deriveCharacter — empty log', () => {
-  const state = deriveCharacter('Tyler', EMPTY_LOG, SKILLS, CLASSES, CATALOG)
+  const state = deriveCharacter('Tyler', undefined, [])
 
   it('name is preserved', () => expect(state.name).toBe('Tyler'))
   it('totalXP is 0', () => expect(state.totalXP).toBe(0))
   it('overallLevel is 1', () => expect(state.overallLevel).toBe(1))
-  it('all skill levels are 0', () => {
-    for (const s of Object.values(state.skills)) expect(s.level).toBe(0)
+  it('all nodes are rank 0', () => {
+    for (const n of Object.values(state.nodes)) expect(n.rank).toBe(0)
   })
-  it('no classes unlocked', () => expect(state.unlockedClasses).toHaveLength(0))
-  it('formalRank is null', () => expect(state.formalRank).toBeNull())
-  it('title is Unspecced Initiate', () => expect(state.title.title).toBe('Unspecced Initiate'))
-  it('credentials list is empty', () => expect(state.credentials).toHaveLength(0))
+  it('title is Unranked', () => expect(state.title.title).toBe('Unranked'))
+  it('no credentials earned', () => expect(state.credentialsEarned).toHaveLength(0))
 })
 
-describe('deriveCharacter — single catalog entry', () => {
-  const log: LogEntry[] = [makeEntry({ id: 'e1', catalogId: 'secplus' })]
-  const state = deriveCharacter('Tyler', log, SKILLS, CLASSES, CATALOG)
+describe('deriveCharacter — repeatable node logging', () => {
+  const log: LogEntry[] = [makeEntry(repeatableNode.id), makeEntry(repeatableNode.id)]
+  const state = deriveCharacter('Tyler', undefined, log)
+  const node = state.nodes[repeatableNode.id]
 
-  it('security XP is 120', () => expect(state.skills['security'].xp).toBe(120))
-  it('credential is recorded', () => expect(state.credentials).toContain('CompTIA Security+'))
-  it('secplus unlocks cysa', () => expect(state.revealedEntries.has('cysa')).toBe(true))
+  it('accumulates flat XP per log', () => expect(node.xp).toBe(XP_PER_LOG * 2))
+  it('logCount reflects number of entries', () => expect(node.logCount).toBe(2))
+  it('rank is derived from XP thresholds', () => {
+    expect(node.rank).toBe(XP_PER_LOG * 2 >= RANK_THRESHOLDS[0] ? 1 : 0)
+  })
 })
 
-describe('deriveCharacter — custom entry', () => {
-  const log: LogEntry[] = [
-    makeEntry({
-      id: 'e2',
-      catalogId: null,
-      custom: {
-        name: 'Custom CTF',
-        type: 'side',
-        skillXP: { 'offensive-security': 80, 'networking': 40 },
-      },
-    }),
-  ]
-  const state = deriveCharacter('Tyler', log, SKILLS, CLASSES, CATALOG)
+describe('deriveCharacter — non-repeatable credential node', () => {
+  const log: LogEntry[] = [makeEntry(credentialNode.id)]
+  const state = deriveCharacter('Tyler', undefined, log)
+  const node = state.nodes[credentialNode.id]
 
-  it('offensive-security XP is 80', () => expect(state.skills['offensive-security'].xp).toBe(80))
-  it('networking XP is 40', () => expect(state.skills['networking'].xp).toBe(40))
+  it('is marked achieved after a single log', () => expect(node.achieved).toBe(true))
+  it('is immediately rank 3', () => expect(node.rank).toBe(3))
+  it('appears in credentialsEarned', () => expect(state.credentialsEarned.map((n) => n.id)).toContain(credentialNode.id))
 })
 
 describe('deriveCharacter — PURITY: same log always produces same result', () => {
-  const log: LogEntry[] = [
-    makeEntry({ id: 'e1', catalogId: 'secplus' }),
-    makeEntry({ id: 'e2', catalogId: null, custom: { name: 'CTF', type: 'side', skillXP: { 'offensive-security': 80 } } }),
-  ]
-  const a = deriveCharacter('Tyler', log, SKILLS, CLASSES, CATALOG)
-  const b = deriveCharacter('Tyler', log, SKILLS, CLASSES, CATALOG)
+  const log: LogEntry[] = [makeEntry(repeatableNode.id), makeEntry(credentialNode.id)]
+  const a = deriveCharacter('Tyler', undefined, log)
+  const b = deriveCharacter('Tyler', undefined, log)
 
   it('totalXP is identical', () => expect(a.totalXP).toBe(b.totalXP))
-  it('skills are identical', () => {
-    for (const id of Object.keys(a.skills)) {
-      expect(a.skills[id].xp).toBe(b.skills[id].xp)
-      expect(a.skills[id].level).toBe(b.skills[id].level)
-    }
-  })
   it('title is identical', () => expect(a.title.title).toBe(b.title.title))
-  it('unlockedClasses count is identical', () => expect(a.unlockedClasses.length).toBe(b.unlockedClasses.length))
 })
 
-describe('deriveCharacter — ORDER INDEPENDENCE: skill XP is a commutative sum', () => {
-  const logAB: LogEntry[] = [
-    makeEntry({ id: 'e1', catalogId: 'secplus' }),
-    makeEntry({ id: 'e2', catalogId: null, custom: { name: 'Project', type: 'project', skillXP: { 'security': 50 } } }),
-  ]
-  const logBA: LogEntry[] = [logAB[1], logAB[0]]
+describe('deriveCharacter — ORDER INDEPENDENCE: node XP is a commutative sum', () => {
+  const e1 = makeEntry(repeatableNode.id, { id: 'e1' })
+  const e2 = makeEntry(repeatableNode.id, { id: 'e2' })
+  const stateAB = deriveCharacter('Tyler', undefined, [e1, e2])
+  const stateBA = deriveCharacter('Tyler', undefined, [e2, e1])
 
-  const stateAB = deriveCharacter('Tyler', logAB, SKILLS, CLASSES, CATALOG)
-  const stateBA = deriveCharacter('Tyler', logBA, SKILLS, CLASSES, CATALOG)
-
-  it('security XP is order-independent', () =>
-    expect(stateAB.skills['security'].xp).toBe(stateBA.skills['security'].xp))
+  it('node XP is order-independent', () =>
+    expect(stateAB.nodes[repeatableNode.id].xp).toBe(stateBA.nodes[repeatableNode.id].xp))
   it('totalXP is order-independent', () =>
     expect(stateAB.totalXP).toBe(stateBA.totalXP))
-  it('overallLevel is order-independent', () =>
-    expect(stateAB.overallLevel).toBe(stateBA.overallLevel))
-  it('title is order-independent', () =>
-    expect(stateAB.title.title).toBe(stateBA.title.title))
 })
 
-describe('deriveCharacter — class unlocking', () => {
-  // Need security ≥ 40 for Security Analyst
-  // Security+ gives 120 XP → skillLevel(120) = floor((120/5)^(1/1.5)) = floor(24^0.667) = floor(8.32) = 8
-  // Need more XP. Let's use a custom entry to reach level 40.
-  // xpForLevel(40) = round(5 * 40^1.5) = round(5 * 252.98) = round(1264.9) = 1265
-  const log: LogEntry[] = [
-    makeEntry({ id: 'e1', catalogId: null, custom: { name: 'Test', type: 'other', skillXP: { 'security': 1265 } } }),
-  ]
-  const state = deriveCharacter('Tyler', log, SKILLS, CLASSES, CATALOG)
-
-  it('security level is at least 40', () => expect(state.skills['security'].level).toBeGreaterThanOrEqual(40))
-  it('Security Analyst is unlocked', () => expect(state.unlockedClasses.map(c => c.id)).toContain('security-analyst'))
-  it('Pen Tester is NOT unlocked (other skills too low)', () => expect(state.unlockedClasses.map(c => c.id)).not.toContain('pen-tester'))
-  it('formalRank is Security Analyst', () => expect(state.formalRank?.id).toBe('security-analyst'))
-})
-
-describe('deriveCharacter — XP cap per skill', () => {
-  const log: LogEntry[] = [
-    makeEntry({ id: 'e1', catalogId: null, custom: { name: 'x', type: 'other', skillXP: { 'security': 9999 } } }),
-  ]
-  const state = deriveCharacter('Tyler', log, SKILLS, CLASSES, CATALOG)
-  it('security XP is capped at 5000', () => expect(state.skills['security'].xp).toBe(5000))
-  it('security level is 100', () => expect(state.skills['security'].level).toBe(100))
+describe('deriveCharacter — unknown nodeId is ignored, not thrown', () => {
+  const log: LogEntry[] = [makeEntry('does-not-exist')]
+  it('does not throw', () => expect(() => deriveCharacter('Tyler', undefined, log)).not.toThrow())
 })

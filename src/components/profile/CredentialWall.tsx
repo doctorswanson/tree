@@ -1,20 +1,30 @@
+import type { NodeState } from '@/engine/types'
+
 interface Props {
-  credentials: string[]
+  credentials: NodeState[]
 }
 
 export default function CredentialWall({ credentials }: Props) {
-  if (credentials.length === 0) return null
+  if (credentials.length === 0) {
+    return (
+      <div className="panel p-4">
+        <p className="panel-title mb-2">Credentials</p>
+        <p className="font-mono text-xs text-meta">None achieved yet. Certifications and degrees will appear here.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="panel p-4">
-      <p className="panel-title mb-2">Credentials</p>
+      <p className="panel-title mb-3">Credentials</p>
       <div className="flex flex-wrap gap-2">
         {credentials.map((c) => (
           <span
-            key={c}
-            className="text-xs font-display font-medium text-amber border border-amber/40 bg-amber/10 rounded-lg px-2.5 py-1.5"
+            key={c.id}
+            className="text-xs font-display font-medium rounded-lg px-2.5 py-1.5 border"
+            style={{ color: c.boughColor, borderColor: `${c.boughColor}66`, backgroundColor: `${c.boughColor}14` }}
           >
-            🏅 {c}
+            {c.name}
           </span>
         ))}
       </div>
