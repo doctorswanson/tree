@@ -33,12 +33,12 @@ export default function SettingsDrawer({ open, onClose }: Props) {
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Settings">
+    <Modal open={open} onClose={onClose} title="settings">
       <div className="p-5 space-y-5">
         {/* Character info */}
         {character && (
           <div>
-            <p className="font-display text-[10px] text-meta tracking-[0.3em] uppercase mb-1">Character</p>
+            <p className="font-display text-[10px] text-meta tracking-[0.3em] mb-1">character</p>
             <p className="font-body text-starlight">{character.name}</p>
             <p className="font-body text-mist text-xs mt-0.5">
               {character.log.length} log entr{character.log.length === 1 ? 'y' : 'ies'}
@@ -51,12 +51,12 @@ export default function SettingsDrawer({ open, onClose }: Props) {
 
         {/* Export */}
         <div>
-          <p className="font-display text-[10px] text-meta tracking-[0.3em] uppercase mb-2">Data</p>
+          <p className="font-display text-[10px] text-meta tracking-[0.3em] mb-2">data</p>
           <button className="btn-cyan w-full mb-2 text-sm" onClick={exportJSON}>
-            Export character JSON
+            export character JSON
           </button>
           <button className="btn-ghost w-full text-sm" onClick={() => fileRef.current?.click()}>
-            Import character JSON
+            import character JSON
           </button>
           <input
             ref={fileRef}
@@ -75,7 +75,7 @@ export default function SettingsDrawer({ open, onClose }: Props) {
         {/* Danger zone */}
         <div>
           <button className="btn-danger w-full text-sm" onClick={handleReset}>
-            Reset & start over
+            reset & start over
           </button>
         </div>
       </div>

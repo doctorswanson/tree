@@ -10,6 +10,7 @@ import ProfileModule from '@/components/profile/ProfileModule'
 import SettingsDrawer from '@/components/character/SettingsDrawer'
 import { useCharacter } from '@/store/CharacterProvider'
 import Onboarding from '@/components/layout/Onboarding'
+import ToastHost from '@/components/ui/Toast'
 
 export default function App() {
   const [tab, setTab] = useState<TabId>('arbor')
@@ -57,6 +58,7 @@ export default function App() {
 
       <LogNodeModal node={loggingNode} onClose={() => setLoggingNodeId(null)} />
       <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <ToastHost />
     </div>
   )
 }

@@ -33,10 +33,13 @@ export function boughFocusState(totalXP: number): FocusState {
  */
 export function progressionLayer(branchNodes: NodeState[], index: number, count: number): ProgressionLayer {
   if (branchNodes.length === 0) return 'fundamentals'
+  const t = count <= 1 ? 0 : index / (count - 1)
+  // Position wins for the earliest branch — fundamentals nodes are authored as
+  // one-and-done credentials (see ALL_NODES in data/arbor.ts), which would
+  // otherwise satisfy the credential-ratio check below and get mislabeled mastery.
+  if (t <= 0.15) return 'fundamentals'
   const credentialRatio = branchNodes.filter((n) => !n.repeatable).length / branchNodes.length
   if (credentialRatio > 0.5) return 'mastery'
-  const t = count <= 1 ? 0 : index / (count - 1)
-  if (t <= 0.15) return 'fundamentals'
   if (t <= 0.55) return 'applied'
   return 'advanced'
 }

@@ -701,17 +701,25 @@ export interface FlatNode extends ArborNode {
   boughColor: string
 }
 
+// The first branch of every bough (same "early position" rule used to infer
+// the Fundamentals progression layer in engine/focus.ts) is treated as
+// one-and-done: once you've logged it, you have it. We override `repeatable`
+// here at the data layer rather than in derive.ts so every downstream
+// consumer (XP math, the Log modal's "already achieved" copy, Codex badges)
+// just works off the existing repeatable/achieved fields with no special-casing.
 export const ALL_NODES: FlatNode[] = BOUGHS.flatMap((bough) =>
-  bough.branches.flatMap((branch) =>
-    branch.nodes.map((node) => ({
+  bough.branches.flatMap((branch, branchIndex) => {
+    const isFundamentalsBranch = branchIndex === 0
+    return branch.nodes.map((node) => ({
       ...node,
+      repeatable: isFundamentalsBranch ? false : node.repeatable,
       branchId: branch.id,
       branchName: branch.name,
       boughId: bough.id,
       boughName: bough.name,
       boughColor: bough.color,
     }))
-  )
+  })
 )
 
 export const NODE_MAP: Record<string, FlatNode> = Object.fromEntries(

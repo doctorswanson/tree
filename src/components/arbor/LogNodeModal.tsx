@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import Modal from '@/components/ui/Modal'
+import ScrollDatePicker from '@/components/ui/ScrollDatePicker'
 import type { NodeState } from '@/engine/types'
 import { useCharacter } from '@/store/CharacterProvider'
+import { showToast } from '@/components/ui/Toast'
 
 interface Props {
   node: NodeState | null
@@ -21,23 +23,24 @@ export default function LogNodeModal({ node, onClose }: Props) {
       note: note.trim() || undefined,
       date: date || undefined,
     })
+    showToast(node.repeatable ? `logged: ${node.name}` : `achieved: ${node.name}`)
     setNote('')
     setDate('')
     onClose()
   }
 
   return (
-    <Modal open={!!node} onClose={onClose} title={`Log: ${node.name}`}>
+    <Modal open={!!node} onClose={onClose} title={`log: ${node.name}`}>
       <div className="p-5 flex flex-col gap-4">
         <p className="font-body text-sm text-mist">{node.desc}</p>
 
         {!node.repeatable && node.achieved && (
-          <p className="font-mono text-xs text-accent">Already achieved — this credential is logged once.</p>
+          <p className="font-mono text-xs text-accent">already achieved — this credential is logged once.</p>
         )}
 
         <div>
-          <label className="block font-display text-[11px] tracking-[0.2em] text-meta uppercase mb-2">
-            Note (optional)
+          <label className="block font-display text-[11px] tracking-[0.2em] text-meta mb-2">
+            note (optional)
           </label>
           <textarea
             className="w-full bg-void/60 border border-shadow/80 rounded-lg px-3 py-2
@@ -51,17 +54,10 @@ export default function LogNodeModal({ node, onClose }: Props) {
         </div>
 
         <div>
-          <label className="block font-display text-[11px] tracking-[0.2em] text-meta uppercase mb-2">
-            Date (optional)
+          <label className="block font-display text-[11px] tracking-[0.2em] text-meta mb-2">
+            date (optional)
           </label>
-          <input
-            type="date"
-            className="w-full bg-void/60 border border-shadow/80 rounded-lg px-3 py-2
-                       font-mono text-starlight text-sm
-                       focus:outline-none focus:border-accent/60 focus:bg-void transition-colors"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+          <ScrollDatePicker value={date} onChange={setDate} />
         </div>
 
         <button
@@ -69,7 +65,7 @@ export default function LogNodeModal({ node, onClose }: Props) {
           disabled={!node.repeatable && node.achieved}
           onClick={handleSubmit}
         >
-          {node.repeatable ? 'Log Entry' : 'Mark Achieved'}
+          {node.repeatable ? 'log entry' : 'mark achieved'}
         </button>
       </div>
     </Modal>

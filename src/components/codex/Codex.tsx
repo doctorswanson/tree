@@ -30,7 +30,7 @@ export default function Codex({ state, selectedNodeId, onSelectNode }: Props) {
           className="w-full bg-void/60 border border-shadow/80 rounded-lg px-3 py-2
                      font-body text-starlight text-sm placeholder:text-meta
                      focus:outline-none focus:border-accent/60 focus:bg-void transition-colors"
-          placeholder="Search nodes…"
+          placeholder="search nodes…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -41,7 +41,7 @@ export default function Codex({ state, selectedNodeId, onSelectNode }: Props) {
             }`}
             onClick={() => setBoughFilter(null)}
           >
-            All
+            all
           </button>
           {BOUGHS.map((b) => (
             <button
@@ -65,26 +65,50 @@ export default function Codex({ state, selectedNodeId, onSelectNode }: Props) {
           {filtered.map((node) => {
             const active = node.rank > 0 || node.achieved
             const selected = node.id === selectedNodeId
+            const started = node.logCount > 0 || node.achieved
+            const badge = node.achieved
+              ? { cls: 'rank-3', text: 'done' }
+              : node.rank > 0
+                ? { cls: `rank-${node.rank}`, text: `rank ${node.rank}` }
+                : node.logCount > 0
+                  ? { cls: 'rank-1', text: `logged ×${node.logCount}` }
+                  : node.focusState === 'available'
+                    ? { cls: 'rank-0', text: 'available' }
+                    : { cls: 'rank-0', text: '—' }
+            const progressPct = node.repeatable && node.rank < 3 ? Math.min(100, Math.round((node.xp / 1200) * 100)) : null
             return (
               <button
                 key={node.id}
                 onClick={() => onSelectNode(node.id)}
-                className={`text-left rounded-md border p-3 transition-colors ${selected ? 'bg-white/5' : ''}`}
-                style={{ borderColor: selected ? node.boughColor : 'rgba(28,38,48,1)' }}
+                className={`text-left rounded-md border p-3 transition-all hover:border-shadow ${selected ? 'bg-white/5' : 'bg-panel/30'}`}
+                style={{
+                  borderColor: selected ? node.boughColor : 'rgba(28,38,48,1)',
+                  boxShadow: selected ? `0 0 14px ${node.boughColor}33` : undefined,
+                }}
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-mono text-[10px] uppercase tracking-wider" style={{ color: node.boughColor }}>
                     {node.boughName}
                   </span>
-                  <span className={`rank-${node.rank}`}>{node.achieved ? 'DONE' : `R${node.rank}`}</span>
+                  <span className={badge.cls}>{badge.text}</span>
                 </div>
-                <p className={`font-display text-sm ${active ? 'text-starlight' : 'text-mist'}`}>{node.name}</p>
+                <p className={`font-display text-sm ${active ? 'text-starlight' : started ? 'text-mist' : 'text-mist/70'}`}>
+                  {node.name}
+                </p>
                 <p className="font-body text-xs text-meta mt-1 line-clamp-2">{node.desc}</p>
+                {progressPct !== null && progressPct > 0 && (
+                  <div className="h-0.5 rounded-full bg-shadow/70 overflow-hidden mt-2">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${progressPct}%`, backgroundColor: node.boughColor }}
+                    />
+                  </div>
+                )}
               </button>
             )
           })}
           {filtered.length === 0 && (
-            <p className="font-mono text-xs text-meta col-span-full text-center py-8">No nodes match.</p>
+            <p className="font-mono text-xs text-meta col-span-full text-center py-8">no nodes match.</p>
           )}
         </div>
       </div>

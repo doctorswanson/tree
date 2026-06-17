@@ -1,9 +1,9 @@
 import type { Node, Edge } from '@xyflow/react'
 import type { BoughState, BranchState, NodeState } from '@/engine/types'
 
-const BOUGH_RADIUS = 760
-const BRANCH_RADIUS = 280
-const NODE_RADIUS = 190
+const BOUGH_RADIUS = 900
+const BRANCH_RADIUS = 2000
+const NODE_RADIUS = 4200
 
 export type ArborNodeData =
   | { kind: 'root' }
@@ -54,12 +54,25 @@ export function buildArborGraph(boughs: BoughState[]): { nodes: Node<ArborNodeDa
       interactionWidth: 0,
     })
 
-    const branchCount = bough.branches.length
-    const arcSpan = ((2 * Math.PI) / boughCount) * 0.92
+    // Leaves (skill nodes) get one evenly-spaced angular slot apiece across the
+    // whole bough arc, on a single shared ring — a classic radial-dendrogram
+    // layout. This guarantees a fixed minimum angular gap between ANY two
+    // leaves regardless of which branch they belong to, so dense boughs (e.g.
+    // 6 branches / 19 nodes) can't pack two unrelated nodes on top of each
+    // other the way independent per-branch fans could.
+    const arcSpan = ((2 * Math.PI) / boughCount) * 0.95
+    const totalLeaves = bough.branches.reduce((sum, b) => sum + b.nodes.length, 0)
+    const leafGap = totalLeaves <= 1 ? 0 : arcSpan / (totalLeaves - 1)
 
-    bough.branches.forEach((branch, brI) => {
-      const t = branchCount === 1 ? 0 : brI / (branchCount - 1) - 0.5
-      const branchAngle = boughAngle + t * arcSpan
+    let leafIndex = 0
+    bough.branches.forEach((branch) => {
+      const leafAngles = branch.nodes.map((_, ni) => {
+        const globalIndex = leafIndex + ni
+        return boughAngle + (globalIndex - (totalLeaves - 1) / 2) * leafGap
+      })
+      leafIndex += branch.nodes.length
+
+      const branchAngle = leafAngles.reduce((sum, a) => sum + a, 0) / leafAngles.length
       const bxx = bx + Math.cos(branchAngle) * BRANCH_RADIUS
       const byy = by + Math.sin(branchAngle) * BRANCH_RADIUS
 
@@ -82,14 +95,10 @@ export function buildArborGraph(boughs: BoughState[]): { nodes: Node<ArborNodeDa
         interactionWidth: 0,
       })
 
-      const nodeCount = branch.nodes.length
-      const nodeArcSpan = Math.min((arcSpan / branchCount) * 2.4, Math.PI * 0.6)
-
       branch.nodes.forEach((node, ni) => {
-        const tn = nodeCount === 1 ? 0 : ni / (nodeCount - 1) - 0.5
-        const nodeAngle = branchAngle + tn * nodeArcSpan
-        const nx = bxx + Math.cos(nodeAngle) * NODE_RADIUS
-        const ny = byy + Math.sin(nodeAngle) * NODE_RADIUS
+        const nodeAngle = leafAngles[ni]
+        const nx = bx + Math.cos(nodeAngle) * NODE_RADIUS
+        const ny = by + Math.sin(nodeAngle) * NODE_RADIUS
 
         nodes.push({
           id: node.id,

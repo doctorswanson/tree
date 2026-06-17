@@ -46,6 +46,21 @@ describe('deriveCharacter — non-repeatable credential node', () => {
   it('appears in credentialsEarned', () => expect(state.credentialsEarned.map((n) => n.id)).toContain(credentialNode.id))
 })
 
+describe('deriveCharacter — fundamentals layer is one-and-done', () => {
+  const fundamentalsNode = ALL_NODES[0]
+  const log: LogEntry[] = [makeEntry(fundamentalsNode.id)]
+  const state = deriveCharacter('Tyler', undefined, log)
+  const node = state.nodes[fundamentalsNode.id]
+
+  it('the first branch of a bough is authored as non-repeatable', () => {
+    expect(fundamentalsNode.repeatable).toBe(false)
+  })
+  it('is achieved after a single log, regardless of how it was originally authored', () => {
+    expect(node.achieved).toBe(true)
+    expect(node.rank).toBe(3)
+  })
+})
+
 describe('deriveCharacter — PURITY: same log always produces same result', () => {
   const log: LogEntry[] = [makeEntry(repeatableNode.id), makeEntry(credentialNode.id)]
   const a = deriveCharacter('Tyler', undefined, log)

@@ -24,8 +24,8 @@ export default function Onboarding() {
 
         {/* Name prompt */}
         <div className="panel-raised p-6">
-          <label className="block font-display text-[11px] tracking-[0.2em] text-meta uppercase mb-3">
-            Your Handle
+          <label className="block font-display text-[11px] tracking-[0.2em] text-meta mb-3">
+            your handle
           </label>
           <input
             type="text"
@@ -50,7 +50,7 @@ export default function Onboarding() {
             disabled={!canSubmit}
             onClick={() => canSubmit && createCharacter(name.trim())}
           >
-            Plant the Tree
+            plant the tree
           </button>
         </div>
 

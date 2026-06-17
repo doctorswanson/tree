@@ -9,16 +9,16 @@ interface Props {
 }
 
 const LAYERS: { id: ProgressionLayer; label: string; hint: string }[] = [
-  { id: 'fundamentals', label: 'Fundamentals', hint: 'Where this path begins.' },
-  { id: 'applied', label: 'Applied', hint: 'Putting the basics to work.' },
-  { id: 'advanced', label: 'Advanced', hint: 'Specialized, harder-won ground.' },
-  { id: 'mastery', label: 'Mastery / Certification', hint: 'Recognized, named achievement.' },
+  { id: 'fundamentals', label: 'fundamentals', hint: 'Where this path begins.' },
+  { id: 'applied', label: 'applied', hint: 'Putting the basics to work.' },
+  { id: 'advanced', label: 'advanced', hint: 'Specialized, harder-won ground.' },
+  { id: 'mastery', label: 'mastery / certification', hint: 'Recognized, named achievement.' },
 ]
 
 const FOCUS_LABEL: Record<string, { label: string; hint: string }> = {
-  active: { label: 'ACTIVE', hint: "You've already put work in here." },
-  available: { label: 'AVAILABLE', hint: 'A sensible next step.' },
-  locked: { label: 'DORMANT', hint: 'No prerequisite — jump in anytime.' },
+  active: { label: 'active', hint: "You've already put work in here." },
+  available: { label: 'available', hint: 'A sensible next step.' },
+  locked: { label: 'dormant', hint: 'No prerequisite — jump in anytime.' },
 }
 
 export default function RightPanel({ state, selection, onLogNode }: Props) {
@@ -44,7 +44,7 @@ export default function RightPanel({ state, selection, onLogNode }: Props) {
         <div className="panel p-3 grid grid-cols-3 gap-2 text-center">
           <div>
             <p className="font-mono text-base text-starlight">{bough.totalXP}</p>
-            <p className="font-mono text-[10px] text-meta">XP</p>
+            <p className="font-mono text-[10px] text-meta">xp</p>
           </div>
           <div>
             <p className="font-mono text-base text-starlight">{bough.nodesStarted}</p>
@@ -65,7 +65,7 @@ export default function RightPanel({ state, selection, onLogNode }: Props) {
             return (
               <div key={layer.id} className="rounded-md border border-shadow/60 p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-display text-xs font-semibold uppercase tracking-wider" style={{ color: bough.color }}>
+                  <span className="font-display text-xs font-semibold tracking-wider" style={{ color: bough.color }}>
                     {layer.label}
                   </span>
                   <span className="font-mono text-[10px] text-meta">{pct}%</span>
@@ -120,7 +120,7 @@ export default function RightPanel({ state, selection, onLogNode }: Props) {
 
       <div className="panel p-3 flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-xs text-meta">Focus</span>
+          <span className="font-mono text-xs text-meta">focus</span>
           <span
             className="font-mono text-[10px] font-medium tracking-widest px-2 py-0.5 rounded border"
             style={{
@@ -133,30 +133,30 @@ export default function RightPanel({ state, selection, onLogNode }: Props) {
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="font-mono text-xs text-meta">Rank</span>
-          <span className={`rank-${node.rank}`}>{node.achieved ? 'ACHIEVED' : `RANK ${node.rank}`}</span>
+          <span className="font-mono text-xs text-meta">rank</span>
+          <span className={`rank-${node.rank}`}>{node.achieved ? 'achieved' : `rank ${node.rank}`}</span>
         </div>
         {node.repeatable && (
           <>
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs text-meta">XP</span>
+              <span className="font-mono text-xs text-meta">xp</span>
               <span className="font-mono text-xs text-starlight">{node.xp}</span>
             </div>
             {next && (
               <div className="flex items-center justify-between">
-                <span className="font-mono text-xs text-meta">Next rank in</span>
-                <span className="font-mono text-xs text-starlight">{next.remaining} XP</span>
+                <span className="font-mono text-xs text-meta">next rank in</span>
+                <span className="font-mono text-xs text-starlight">{next.remaining} xp</span>
               </div>
             )}
           </>
         )}
         <div className="flex items-center justify-between">
-          <span className="font-mono text-xs text-meta">Logged</span>
+          <span className="font-mono text-xs text-meta">logged</span>
           <span className="font-mono text-xs text-starlight">{node.logCount}×</span>
         </div>
         {node.lastLoggedAt && (
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-meta">Last logged</span>
+            <span className="font-mono text-xs text-meta">last logged</span>
             <span className="font-mono text-xs text-starlight">{node.lastLoggedAt.slice(0, 10)}</span>
           </div>
         )}
@@ -167,7 +167,7 @@ export default function RightPanel({ state, selection, onLogNode }: Props) {
         disabled={!node.repeatable && node.achieved}
         onClick={() => onLogNode(node.id)}
       >
-        {node.repeatable ? 'Log Entry' : node.achieved ? 'Already Achieved' : 'Mark Achieved'}
+        {node.repeatable ? 'log entry' : node.achieved ? 'already achieved' : 'mark achieved'}
       </button>
     </aside>
   )

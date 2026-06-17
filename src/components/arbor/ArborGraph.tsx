@@ -1,15 +1,16 @@
-import { useMemo, useCallback, useState, useEffect } from 'react'
+import { useMemo, useCallback, useState, useEffect, useRef } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
   Background,
   Controls,
+  ControlButton,
   useReactFlow,
   type Node as RFNode,
   type OnMove,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { ChevronRight, X } from 'lucide-react'
+import { ChevronRight, X, Maximize2, Minimize2 } from 'lucide-react'
 import type { BoughState } from '@/engine/types'
 import { buildArborGraph, type ArborNodeData } from './layout'
 import { chainFromArborData, edgeInChain, inChain, type FocusChain } from './focusChain'
@@ -43,18 +44,31 @@ function rfNodeInChain(n: RFNode<ArborNodeData>, chain: FocusChain): boolean {
 
 function describeFocusData(data: ArborNodeData | null): string | null {
   if (!data) return null
-  if (data.kind === 'root') return 'The Arbor — your whole tree'
-  if (data.kind === 'bough') return `${data.bough.name} — ${data.bough.focusState.toUpperCase()} · ${data.bough.totalXP} XP`
+  if (data.kind === 'root') return 'the arbor — your whole tree'
+  if (data.kind === 'bough') return `${data.bough.name} — ${data.bough.focusState} · ${data.bough.totalXP} xp`
   if (data.kind === 'branch') return `${data.branch.name} branch — ${data.branch.layer}`
   const n = data.node
-  return `${n.name} — ${n.achieved ? 'ACHIEVED' : `RANK ${n.rank}/3`}${n.repeatable ? ` · ${n.xp} XP` : ''} · ${n.focusState.toUpperCase()}`
+  return `${n.name} — ${n.achieved ? 'achieved' : `rank ${n.rank}/3`}${n.repeatable ? ` · ${n.xp} xp` : ''} · ${n.focusState}`
 }
 
 function ArborGraphInner({ boughs, selection, onSelect }: Props) {
   const { nodes, edges } = useMemo(() => buildArborGraph(boughs), [boughs])
   const [hoveredData, setHoveredData] = useState<ArborNodeData | null>(null)
   const [zoom, setZoom] = useState(1)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
   const { fitView } = useReactFlow()
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(document.fullscreenElement === containerRef.current)
+    document.addEventListener('fullscreenchange', handler)
+    return () => document.removeEventListener('fullscreenchange', handler)
+  }, [])
+
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) document.exitFullscreen()
+    else containerRef.current?.requestFullscreen()
+  }, [])
 
   const nodeLookup = useMemo(() => {
     const map: Record<string, { boughId: string; branchId: string; name: string }> = {}
@@ -107,13 +121,13 @@ function ArborGraphInner({ boughs, selection, onSelect }: Props) {
             : nodeFocusLookup[d.nodeId] ?? 'locked'
 
       let opacity = EDGE_BASE_OPACITY[fs]
-      let strokeWidth = 1
+      let strokeWidth = 1.8
       let isInChain = false
 
       if (effectiveChain) {
         if (edgeInChain(edge, effectiveChain)) {
           opacity = 0.85
-          strokeWidth = 2
+          strokeWidth = 3
           isInChain = true
         } else {
           opacity = Math.min(opacity, 0.05)
@@ -183,7 +197,7 @@ function ArborGraphInner({ boughs, selection, onSelect }: Props) {
   const previewText = describeFocusData(hoveredData) ?? (selection?.kind === 'bough' ? describeFocusData({ kind: 'bough', bough: boughLookup[selection.id] }) : null)
 
   return (
-    <div className="relative w-full h-full bg-grid">
+    <div ref={containerRef} className="relative w-full h-full bg-grid">
       <ReactFlow
         nodes={styledNodes}
         edges={styledEdges}
@@ -199,12 +213,16 @@ function ArborGraphInner({ boughs, selection, onSelect }: Props) {
         edgesReconnectable={false}
         elementsSelectable
         fitView
-        minZoom={0.1}
+        minZoom={0.04}
         maxZoom={1.5}
         proOptions={{ hideAttribution: true }}
       >
         <Background color="#1c2630" gap={32} size={1} />
-        <Controls showInteractive={false} />
+        <Controls showInteractive={false}>
+          <ControlButton onClick={toggleFullscreen} title={isFullscreen ? 'exit fullscreen' : 'fullscreen'}>
+            {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+          </ControlButton>
+        </Controls>
       </ReactFlow>
 
       {/* Breadcrumb / back-out control */}
@@ -213,7 +231,7 @@ function ArborGraphInner({ boughs, selection, onSelect }: Props) {
           className="pointer-events-auto flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-shadow/60 bg-panel/80 text-mist hover:text-accent hover:border-accent/50 transition-colors"
           onClick={() => onSelect(null)}
         >
-          <span className="text-accent">{'>_'}</span> Arbor
+          <span className="text-accent">{'>_'}</span> arbor
         </button>
         {selection && (() => {
           const boughId = selection.kind === 'bough' ? selection.id : nodeLookup[selection.id]?.boughId
@@ -226,13 +244,13 @@ function ArborGraphInner({ boughs, selection, onSelect }: Props) {
                 style={{ color: bough?.color }}
                 onClick={() => boughId && onSelect({ kind: 'bough', id: boughId })}
               >
-                {bough?.name ?? 'Bough'}
+                {bough?.name ?? 'bough'}
               </button>
               {selection.kind === 'node' && (
                 <>
                   <ChevronRight size={13} className="text-meta" />
                   <span className="px-2.5 py-1 rounded-md border border-shadow/40 bg-panel/60 text-starlight">
-                    {nodeLookup[selection.id]?.name ?? 'Node'}
+                    {nodeLookup[selection.id]?.name ?? 'node'}
                   </span>
                 </>
               )}
@@ -243,7 +261,7 @@ function ArborGraphInner({ boughs, selection, onSelect }: Props) {
           <button
             className="pointer-events-auto flex items-center justify-center w-6 h-6 rounded-md border border-shadow/60 bg-panel/80 text-meta hover:text-danger hover:border-danger/50 transition-colors ml-1"
             onClick={() => onSelect(null)}
-            title="Clear selection (Esc)"
+            title="clear selection (esc)"
           >
             <X size={13} />
           </button>

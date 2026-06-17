@@ -24,24 +24,24 @@ export default function LeftSidebar({ state, selection }: Props) {
         <p className="font-body text-[10px] text-meta mt-1.5 italic">{state.title.flavor}</p>
       </div>
 
-      {/* Stats */}
+      {/* Progression */}
       <div className="panel p-3">
-        <p className="panel-title mb-2">Stats</p>
+        <p className="panel-title mb-2">progression</p>
         <div className="flex justify-between font-mono text-[11px] text-mist mb-1">
-          <span>Level</span><span className="text-starlight">[{state.overallLevel}]</span>
+          <span>level</span><span className="text-starlight">[{state.overallLevel}]</span>
         </div>
         <div className="flex justify-between font-mono text-[11px] text-mist mb-1">
-          <span>Total XP</span><span className="text-starlight">[{state.totalXP.toLocaleString()}]</span>
+          <span>total xp</span><span className="text-starlight">[{state.totalXP.toLocaleString()}]</span>
         </div>
         <div className="flex justify-between font-mono text-[11px] text-mist">
-          <span>Logs</span><span className="text-starlight">[{state.totalLogs}]</span>
+          <span>logs</span><span className="text-starlight">[{state.totalLogs}]</span>
         </div>
       </div>
 
       {/* Current focus — mirrors whatever is selected in the Arbor */}
       {focusBough && (
         <div className="panel-raised p-3 animate-fade-in" style={{ borderColor: `${focusBough.color}55` }}>
-          <p className="font-mono text-[10px] uppercase tracking-wider text-meta mb-1">Current Focus</p>
+          <p className="font-mono text-[10px] tracking-wider text-meta mb-1">current focus</p>
           <p className="font-display text-sm font-semibold" style={{ color: focusBough.color }}>{focusBough.name}</p>
           <p className="font-body text-[11px] text-mist mt-1 line-clamp-2">{focusBough.desc}</p>
           <div className="h-1.5 rounded-full bg-shadow/70 border border-shadow overflow-hidden mt-3">
@@ -60,7 +60,7 @@ export default function LeftSidebar({ state, selection }: Props) {
 
       {/* Bough breakdown */}
       <div className="panel p-3 flex-1 min-h-0 flex flex-col">
-        <p className="panel-title mb-2">Boughs</p>
+        <p className="panel-title mb-2">boughs</p>
         <div className="flex flex-col gap-2.5 overflow-y-auto scroll-area pr-1">
           {sortedBoughs.map((bough) => {
             const pct = bough.totalNodes === 0 ? 0 : Math.round((bough.nodesMaxed / bough.totalNodes) * 100)

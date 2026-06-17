@@ -1,5 +1,5 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
-import { Award } from 'lucide-react'
+import { Award, Check } from 'lucide-react'
 import type { NodeState } from '@/engine/types'
 import { FOCUS_OPACITY, DIM_MULTIPLIER } from '../visual'
 import { BOUGH_ICONS } from '../boughIcons'
@@ -13,6 +13,8 @@ const FILL_ALPHA = ['00', '2a', '55', '80']
 export default function SkillNode({ data, selected }: NodeProps<Node<Data>>) {
   const { node, boughColor, dim } = data
   const active = node.rank > 0 || node.achieved
+  const completed = node.rank === 3
+  const started = node.logCount > 0 || node.achieved
   const baseOpacity = FOCUS_OPACITY[node.focusState]
   const opacity = dim ? baseOpacity * DIM_MULTIPLIER : baseOpacity
   const Icon = node.repeatable ? BOUGH_ICONS[node.boughId] : Award
@@ -22,11 +24,15 @@ export default function SkillNode({ data, selected }: NodeProps<Node<Data>>) {
     ? undefined
     : selected
       ? `0 0 16px ${boughColor}`
-      : active
-        ? `0 0 8px ${boughColor}77`
-        : node.focusState === 'available'
-          ? `0 0 4px ${boughColor}33`
-          : undefined
+      : completed
+        ? `0 0 10px ${boughColor}aa, 0 0 2px ${boughColor}`
+        : active
+          ? `0 0 8px ${boughColor}77`
+          : started
+            ? `0 0 5px ${boughColor}55`
+            : node.focusState === 'available'
+              ? `0 0 4px ${boughColor}33`
+              : undefined
 
   const tooltip = `${node.name}\n${node.achieved ? 'Achieved' : `Rank ${node.rank}/3`}${
     node.repeatable ? ` · ${node.xp} XP · logged ${node.logCount}×` : ''
@@ -40,9 +46,7 @@ export default function SkillNode({ data, selected }: NodeProps<Node<Data>>) {
     >
       <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
       <div
-        className={`relative flex items-center justify-center transition-transform group-hover:scale-110 ${
-          node.rank === 3 && !dim ? 'animate-pulse-glow' : ''
-        }`}
+        className="relative flex items-center justify-center transition-transform group-hover:scale-110"
         style={{ width: SIZE, height: SIZE }}
       >
         <Hex
@@ -57,8 +61,16 @@ export default function SkillNode({ data, selected }: NodeProps<Node<Data>>) {
           size={22}
           strokeWidth={1.75}
           className="relative pointer-events-none"
-          style={{ color: active ? stroke : '#56666a' }}
+          style={{ color: active ? stroke : started ? `${boughColor}aa` : '#56666a' }}
         />
+        {completed && !dim && (
+          <div
+            className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center border"
+            style={{ backgroundColor: '#0c1216', borderColor: boughColor, boxShadow: `0 0 4px ${boughColor}` }}
+          >
+            <Check size={10} strokeWidth={3} style={{ color: boughColor }} />
+          </div>
+        )}
       </div>
       <span
         className={`font-mono text-[10px] mt-1.5 text-center leading-tight opacity-0 group-hover:opacity-100 transition-opacity ${

@@ -69,9 +69,14 @@ describe('boughFocusState', () => {
 })
 
 describe('progressionLayer', () => {
-  it('classifies a credential-majority branch as mastery regardless of position', () => {
+  it('classifies a credential-majority branch as mastery when not in the first position', () => {
     const credentialNode = makeNode({ repeatable: false })
-    expect(progressionLayer([credentialNode], 0, 5)).toBe('mastery')
+    expect(progressionLayer([credentialNode], 3, 5)).toBe('mastery')
+  })
+
+  it('classifies the first branch as fundamentals even if its nodes are credentials', () => {
+    const credentialNode = makeNode({ repeatable: false })
+    expect(progressionLayer([credentialNode], 0, 5)).toBe('fundamentals')
   })
 
   it('classifies the first branch as fundamentals', () => {

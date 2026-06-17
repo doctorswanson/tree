@@ -52,8 +52,8 @@ export default function PasscodeGate({ children }: { children: ReactNode }) {
         </div>
 
         <div className="panel-raised p-6">
-          <label className="block font-display text-[11px] tracking-[0.2em] text-meta uppercase mb-3">
-            Passcode
+          <label className="block font-display text-[11px] tracking-[0.2em] text-meta mb-3">
+            passcode
           </label>
           <input
             type="password"
@@ -78,7 +78,7 @@ export default function PasscodeGate({ children }: { children: ReactNode }) {
             disabled={!code.trim() || busy}
             onClick={handleSubmit}
           >
-            {busy ? 'Checking…' : 'Unseal'}
+            {busy ? 'checking…' : 'unseal'}
           </button>
         </div>
       </div>
