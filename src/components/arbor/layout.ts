@@ -1,9 +1,9 @@
 import type { Node, Edge } from '@xyflow/react'
 import type { BoughState, BranchState, NodeState } from '@/engine/types'
 
-const BOUGH_RADIUS = 520
-const BRANCH_RADIUS = 170
-const NODE_RADIUS = 100
+const BOUGH_RADIUS = 760
+const BRANCH_RADIUS = 280
+const NODE_RADIUS = 190
 
 export type ArborNodeData =
   | { kind: 'root' }
@@ -50,6 +50,8 @@ export function buildArborGraph(boughs: BoughState[]): { nodes: Node<ArborNodeDa
       type: 'straight',
       data: { kind: 'root-bough', boughId: bough.id },
       style: { stroke: bough.color },
+      selectable: false,
+      interactionWidth: 0,
     })
 
     const branchCount = bough.branches.length
@@ -76,6 +78,8 @@ export function buildArborGraph(boughs: BoughState[]): { nodes: Node<ArborNodeDa
         type: 'straight',
         data: { kind: 'bough-branch', boughId: bough.id, branchId: branch.id },
         style: { stroke: bough.color },
+        selectable: false,
+        interactionWidth: 0,
       })
 
       const nodeCount = branch.nodes.length
@@ -101,6 +105,8 @@ export function buildArborGraph(boughs: BoughState[]): { nodes: Node<ArborNodeDa
           type: 'straight',
           data: { kind: 'branch-node', boughId: bough.id, branchId: branch.id, nodeId: node.id },
           style: { stroke: bough.color },
+          selectable: false,
+          interactionWidth: 0,
         })
       })
     })

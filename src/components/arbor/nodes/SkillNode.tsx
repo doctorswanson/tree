@@ -1,45 +1,67 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
+import { Award } from 'lucide-react'
 import type { NodeState } from '@/engine/types'
 import { FOCUS_OPACITY, DIM_MULTIPLIER } from '../visual'
+import { BOUGH_ICONS } from '../boughIcons'
+import Hex from './Hex'
 
 type Data = { kind: 'node'; node: NodeState; boughColor: string; dim?: boolean }
 
-const RANK_OPACITY = ['33', '66', 'aa', 'ff']
+const SIZE = 62
+const FILL_ALPHA = ['00', '2a', '55', '80']
 
 export default function SkillNode({ data, selected }: NodeProps<Node<Data>>) {
   const { node, boughColor, dim } = data
   const active = node.rank > 0 || node.achieved
-  const shape = node.repeatable ? 'rounded-full' : 'rotate-45 rounded-sm'
   const baseOpacity = FOCUS_OPACITY[node.focusState]
   const opacity = dim ? baseOpacity * DIM_MULTIPLIER : baseOpacity
+  const Icon = node.repeatable ? BOUGH_ICONS[node.boughId] : Award
+
+  const stroke = active ? boughColor : node.focusState === 'available' ? `${boughColor}88` : '#3a4750'
+  const glow = dim
+    ? undefined
+    : selected
+      ? `0 0 16px ${boughColor}`
+      : active
+        ? `0 0 8px ${boughColor}77`
+        : node.focusState === 'available'
+          ? `0 0 4px ${boughColor}33`
+          : undefined
+
+  const tooltip = `${node.name}\n${node.achieved ? 'Achieved' : `Rank ${node.rank}/3`}${
+    node.repeatable ? ` · ${node.xp} XP · logged ${node.logCount}×` : ''
+  }`
 
   return (
     <div
-      className="flex flex-col items-center w-[88px] cursor-pointer group transition-opacity"
+      className="flex flex-col items-center w-24 cursor-pointer group transition-opacity"
       style={{ opacity }}
-      title={node.name}
+      title={tooltip}
     >
       <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
       <div
-        className={`w-4 h-4 ${shape} transition-all group-hover:scale-125 ${node.rank === 3 && !dim ? 'animate-pulse-glow' : ''}`}
-        style={{
-          background: active ? `${boughColor}${RANK_OPACITY[node.rank]}` : 'transparent',
-          border: `${selected ? 2 : 1.5}px solid ${
-            active ? boughColor : node.focusState === 'available' ? `${boughColor}88` : '#3a4750'
-          }`,
-          boxShadow: dim
-            ? 'none'
-            : selected
-              ? `0 0 14px ${boughColor}, 0 0 0 2px #e7f6eeaa`
-              : active
-                ? `0 0 6px ${boughColor}66`
-                : node.focusState === 'available'
-                  ? `0 0 4px ${boughColor}33`
-                  : 'none',
-        }}
-      />
+        className={`relative flex items-center justify-center transition-transform group-hover:scale-110 ${
+          node.rank === 3 && !dim ? 'animate-pulse-glow' : ''
+        }`}
+        style={{ width: SIZE, height: SIZE }}
+      >
+        <Hex
+          size={SIZE}
+          fill={`${boughColor}${FILL_ALPHA[node.rank]}`}
+          stroke={selected ? stroke : stroke}
+          strokeWidth={selected ? 2.5 : 1.75}
+          glow={selected ? `0 0 16px ${boughColor}, 0 0 0 1px #e7f6eeaa` : glow}
+          className="absolute inset-0"
+        />
+        <Icon
+          size={22}
+          strokeWidth={1.75}
+          className="relative pointer-events-none"
+          style={{ color: active ? stroke : '#56666a' }}
+        />
+      </div>
       <span
-        className={`font-mono text-[9px] mt-1 text-center leading-tight ${
+        className={`font-mono text-[10px] mt-1.5 text-center leading-tight ${
           active ? 'text-mist' : node.focusState === 'available' ? 'text-mist/80' : 'text-meta'
         }`}
       >

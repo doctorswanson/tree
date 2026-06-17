@@ -1,6 +1,15 @@
-import { useMemo, useCallback, useState } from 'react'
-import { ReactFlow, Background, Controls, type Node as RFNode, type OnMove } from '@xyflow/react'
+import { useMemo, useCallback, useState, useEffect } from 'react'
+import {
+  ReactFlow,
+  ReactFlowProvider,
+  Background,
+  Controls,
+  useReactFlow,
+  type Node as RFNode,
+  type OnMove,
+} from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
+import { ChevronRight, X } from 'lucide-react'
 import type { BoughState } from '@/engine/types'
 import { buildArborGraph, type ArborNodeData } from './layout'
 import { chainFromArborData, edgeInChain, inChain, type FocusChain } from './focusChain'
@@ -32,14 +41,30 @@ function rfNodeInChain(n: RFNode<ArborNodeData>, chain: FocusChain): boolean {
   return inChain('node', { boughId: n.data.node.boughId, branchId: n.data.node.branchId, nodeId: n.data.node.id }, chain)
 }
 
-export default function ArborGraph({ boughs, selection, onSelect }: Props) {
+function describeFocusData(data: ArborNodeData | null): string | null {
+  if (!data) return null
+  if (data.kind === 'root') return 'The Arbor — your whole tree'
+  if (data.kind === 'bough') return `${data.bough.name} — ${data.bough.focusState.toUpperCase()} · ${data.bough.totalXP} XP`
+  if (data.kind === 'branch') return `${data.branch.name} branch — ${data.branch.layer}`
+  const n = data.node
+  return `${n.name} — ${n.achieved ? 'ACHIEVED' : `RANK ${n.rank}/3`}${n.repeatable ? ` · ${n.xp} XP` : ''} · ${n.focusState.toUpperCase()}`
+}
+
+function ArborGraphInner({ boughs, selection, onSelect }: Props) {
   const { nodes, edges } = useMemo(() => buildArborGraph(boughs), [boughs])
   const [hoveredData, setHoveredData] = useState<ArborNodeData | null>(null)
   const [zoom, setZoom] = useState(1)
+  const { fitView } = useReactFlow()
 
   const nodeLookup = useMemo(() => {
-    const map: Record<string, { boughId: string; branchId: string }> = {}
-    for (const b of boughs) for (const br of b.branches) for (const n of br.nodes) map[n.id] = { boughId: n.boughId, branchId: n.branchId }
+    const map: Record<string, { boughId: string; branchId: string; name: string }> = {}
+    for (const b of boughs) for (const br of b.branches) for (const n of br.nodes) map[n.id] = { boughId: n.boughId, branchId: n.branchId, name: n.name }
+    return map
+  }, [boughs])
+
+  const boughLookup = useMemo(() => {
+    const map: Record<string, BoughState> = {}
+    for (const b of boughs) map[b.id] = b
     return map
   }, [boughs])
 
@@ -83,18 +108,24 @@ export default function ArborGraph({ boughs, selection, onSelect }: Props) {
 
       let opacity = EDGE_BASE_OPACITY[fs]
       let strokeWidth = 1
+      let isInChain = false
 
       if (effectiveChain) {
         if (edgeInChain(edge, effectiveChain)) {
           opacity = 0.85
           strokeWidth = 2
+          isInChain = true
         } else {
           opacity = Math.min(opacity, 0.05)
         }
       }
       if (zoomedOut) opacity = Math.max(opacity, ZOOM_REVEAL_FLOOR)
 
-      return { ...edge, style: { ...edge.style, strokeOpacity: opacity, strokeWidth } }
+      return {
+        ...edge,
+        className: isInChain ? 'arbor-edge-flow' : undefined,
+        style: { ...edge.style, strokeOpacity: opacity, strokeWidth, strokeDasharray: isInChain ? '1 7' : '1 5' },
+      }
     })
   }, [edges, effectiveChain, zoomedOut, boughFocusLookup, branchFocusLookup, nodeFocusLookup])
 
@@ -115,11 +146,33 @@ export default function ArborGraph({ boughs, selection, onSelect }: Props) {
     [onSelect]
   )
 
+  const handlePaneClick = useCallback(() => onSelect(null), [onSelect])
+
   const handleNodeMouseEnter = useCallback((_: React.MouseEvent, node: RFNode<ArborNodeData>) => {
     setHoveredData(node.data)
   }, [])
   const handleNodeMouseLeave = useCallback(() => setHoveredData(null), [])
   const handleMove: OnMove = useCallback((_, viewport) => setZoom(viewport.zoom), [])
+
+  // Drill into a bough on select; recenter on the full graph when cleared.
+  useEffect(() => {
+    if (selection?.kind === 'bough') {
+      const ids = ['root', `bough-${selection.id}`, ...nodes.filter((n) => rfNodeInChain(n, { boughId: selection.id })).map((n) => n.id)]
+      fitView({ nodes: ids.map((id) => ({ id })), duration: 500, padding: 0.25, maxZoom: 1 })
+    } else if (selection === null) {
+      fitView({ duration: 500, padding: 0.12 })
+    }
+  }, [selection, fitView, nodes])
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onSelect(null)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onSelect])
+
+  const previewText = describeFocusData(hoveredData) ?? (selection?.kind === 'bough' ? describeFocusData({ kind: 'bough', bough: boughLookup[selection.id] }) : null)
 
   return (
     <div className="relative w-full h-full bg-grid">
@@ -128,24 +181,87 @@ export default function ArborGraph({ boughs, selection, onSelect }: Props) {
         edges={styledEdges}
         nodeTypes={nodeTypes}
         onNodeClick={handleNodeClick}
+        onPaneClick={handlePaneClick}
         onNodeMouseEnter={handleNodeMouseEnter}
         onNodeMouseLeave={handleNodeMouseLeave}
         onMove={handleMove}
         nodesDraggable={false}
         nodesConnectable={false}
+        edgesFocusable={false}
         edgesReconnectable={false}
         elementsSelectable
         fitView
-        minZoom={0.15}
+        minZoom={0.1}
         maxZoom={1.5}
         proOptions={{ hideAttribution: true }}
       >
         <Background color="#1c2630" gap={32} size={1} />
         <Controls showInteractive={false} />
       </ReactFlow>
+
+      {/* Breadcrumb / back-out control */}
+      <div className="absolute top-3 left-3 flex items-center gap-1.5 font-mono text-[11px] pointer-events-none select-none">
+        <button
+          className="pointer-events-auto flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-shadow/60 bg-panel/80 text-mist hover:text-accent hover:border-accent/50 transition-colors"
+          onClick={() => onSelect(null)}
+        >
+          <span className="text-accent">{'>_'}</span> Arbor
+        </button>
+        {selection && (() => {
+          const boughId = selection.kind === 'bough' ? selection.id : nodeLookup[selection.id]?.boughId
+          const bough = boughId ? boughLookup[boughId] : undefined
+          return (
+            <>
+              <ChevronRight size={13} className="text-meta" />
+              <button
+                className="pointer-events-auto flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-shadow/60 bg-panel/80 hover:border-accent/50 transition-colors"
+                style={{ color: bough?.color }}
+                onClick={() => boughId && onSelect({ kind: 'bough', id: boughId })}
+              >
+                {bough?.name ?? 'Bough'}
+              </button>
+              {selection.kind === 'node' && (
+                <>
+                  <ChevronRight size={13} className="text-meta" />
+                  <span className="px-2.5 py-1 rounded-md border border-shadow/40 bg-panel/60 text-starlight">
+                    {nodeLookup[selection.id]?.name ?? 'Node'}
+                  </span>
+                </>
+              )}
+            </>
+          )
+        })()}
+        {selection && (
+          <button
+            className="pointer-events-auto flex items-center justify-center w-6 h-6 rounded-md border border-shadow/60 bg-panel/80 text-meta hover:text-danger hover:border-danger/50 transition-colors ml-1"
+            onClick={() => onSelect(null)}
+            title="Clear selection (Esc)"
+          >
+            <X size={13} />
+          </button>
+        )}
+      </div>
+
+      {/* Live hover/selection readout */}
+      <div className="absolute top-3 right-3 max-w-xs pointer-events-none select-none">
+        {previewText && (
+          <p className="font-mono text-[11px] px-2.5 py-1.5 rounded-md border border-shadow/60 bg-panel/80 text-starlight text-right animate-fade-in">
+            {previewText}
+          </p>
+        )}
+      </div>
+
       <p className="absolute bottom-3 left-3 font-mono text-[10px] text-meta pointer-events-none select-none">
-        hover a node to trace its path · zoom out for the full graph
+        hover a node to trace its path · click empty space or press Esc to reset
       </p>
     </div>
+  )
+}
+
+export default function ArborGraph(props: Props) {
+  return (
+    <ReactFlowProvider>
+      <ArborGraphInner {...props} />
+    </ReactFlowProvider>
   )
 }

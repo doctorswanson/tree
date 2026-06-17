@@ -1,0 +1,32 @@
+import {
+  Radar,
+  Crosshair,
+  Hammer,
+  Bug,
+  Shield,
+  Fingerprint,
+  KeyRound,
+  Server,
+  Code2,
+  Cloud,
+  BrainCircuit,
+  Scale,
+  Crown,
+  type LucideIcon,
+} from 'lucide-react'
+
+export const BOUGH_ICONS: Record<string, LucideIcon> = {
+  recon: Radar,
+  exploit: Crosshair,
+  forge: Hammer,
+  dissect: Bug,
+  fortify: Shield,
+  trace: Fingerprint,
+  cipher: KeyRound,
+  infra: Server,
+  code: Code2,
+  cloud: Cloud,
+  neural: BrainCircuit,
+  govern: Scale,
+  command: Crown,
+}

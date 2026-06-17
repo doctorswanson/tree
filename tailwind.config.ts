@@ -23,8 +23,8 @@ export default {
         meta:      '#56666a',
       },
       fontFamily: {
-        display: ['"Space Grotesk"', 'sans-serif'],
-        body:    ['"Inter"', 'sans-serif'],
+        display: ['"JetBrains Mono"', 'monospace'],
+        body:    ['"JetBrains Mono"', 'monospace'],
         mono:    ['"JetBrains Mono"', 'monospace'],
       },
       backgroundImage: {
