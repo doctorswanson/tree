@@ -27,6 +27,17 @@ export interface LogEntry {
 
 export type NodeRank = 0 | 1 | 2 | 3
 
+/**
+ * Visual/decision focus, not a real prerequisite gate — every node is always
+ * loggable. 'locked' means "no nearby progress, not an obvious next step";
+ * 'available' means "an entry point or natural continuation"; 'active' means
+ * "you've already put XP into this." See engine/focus.ts for derivation rules.
+ */
+export type FocusState = 'locked' | 'available' | 'active'
+
+/** Inferred step in a branch's learning path — used to group Dissect-panel content. */
+export type ProgressionLayer = 'fundamentals' | 'applied' | 'advanced' | 'mastery'
+
 export interface NodeState {
   id: string
   name: string
@@ -42,6 +53,7 @@ export interface NodeState {
   logCount: number
   achieved: boolean
   lastLoggedAt?: string
+  focusState: FocusState
 }
 
 export interface BranchState {
@@ -49,6 +61,8 @@ export interface BranchState {
   name: string
   boughId: string
   nodes: NodeState[]
+  focusState: FocusState
+  layer: ProgressionLayer
 }
 
 export interface BoughState {
@@ -61,6 +75,7 @@ export interface BoughState {
   nodesStarted: number
   nodesMaxed: number
   totalNodes: number
+  focusState: FocusState
 }
 
 export interface TitleState {

@@ -5,6 +5,7 @@
 import { BOUGHS, ALL_NODES, NODE_MAP } from '@/data/arbor'
 import { XP_PER_LOG, RANK_THRESHOLDS, nodeRank, overallLevel } from './xp'
 import { deriveTitle } from './titleEngine'
+import { nodeFocusState, branchFocusState, boughFocusState, progressionLayer } from './focus'
 import type { LogEntry, NodeState, BranchState, BoughState, CharacterState } from './types'
 
 const MAX_CREDENTIAL_XP = RANK_THRESHOLDS[2]
@@ -61,27 +62,37 @@ export function deriveCharacter(
       logCount: countByNode[def.id] ?? 0,
       achieved,
       lastLoggedAt: lastLoggedByNode[def.id],
+      focusState: 'locked', // overwritten below once branch siblings are known
     }
   }
 
   const boughs: BoughState[] = BOUGHS.map((bough) => {
-    const branches: BranchState[] = bough.branches.map((branch) => ({
-      id: branch.id,
-      name: branch.name,
-      boughId: bough.id,
-      nodes: branch.nodes.map((n) => nodes[n.id]),
-    }))
+    const branchCount = bough.branches.length
+    const branches: BranchState[] = bough.branches.map((branch, branchIndex) => {
+      const branchNodes = branch.nodes.map((n) => nodes[n.id])
+      for (const n of branchNodes) n.focusState = nodeFocusState(n, branchNodes)
+      return {
+        id: branch.id,
+        name: branch.name,
+        boughId: bough.id,
+        nodes: branchNodes,
+        focusState: branchFocusState(branchNodes),
+        layer: progressionLayer(branchNodes, branchIndex, branchCount),
+      }
+    })
     const boughNodes = branches.flatMap((b) => b.nodes)
+    const boughTotalXP = boughXP[bough.id] ?? 0
     return {
       id: bough.id,
       name: bough.name,
       color: bough.color,
       desc: bough.desc,
       branches,
-      totalXP: boughXP[bough.id] ?? 0,
+      totalXP: boughTotalXP,
       nodesStarted: boughNodes.filter((n) => n.logCount > 0).length,
       nodesMaxed: boughNodes.filter((n) => n.rank === 3).length,
       totalNodes: boughNodes.length,
+      focusState: boughFocusState(boughTotalXP),
     }
   })
 

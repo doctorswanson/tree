@@ -39,9 +39,9 @@ export default function App() {
       ) : (
         <>
           <div className="flex-1 flex min-h-0">
-            <LeftSidebar state={state} />
+            <LeftSidebar state={state} selection={selection} />
             {tab === 'arbor' ? (
-              <ArborGraph boughs={state.boughs} onSelect={setSelection} />
+              <ArborGraph boughs={state.boughs} selection={selection} onSelect={setSelection} />
             ) : (
               <Codex
                 state={state}

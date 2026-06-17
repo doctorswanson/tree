@@ -9,13 +9,15 @@ interface Props {
   onOpenSettings: () => void
 }
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: 'arbor', label: 'Arbor' },
-  { id: 'codex', label: 'Codex' },
-  { id: 'profile', label: 'Profile' },
+const TABS: { id: TabId; label: string; subtitle: string }[] = [
+  { id: 'arbor', label: 'Arbor', subtitle: 'Growth & progression' },
+  { id: 'codex', label: 'Codex', subtitle: 'Reference library' },
+  { id: 'profile', label: 'Profile', subtitle: 'Identity & stats' },
 ]
 
 export default function TopNav({ active, onChange, characterName, title, level, onOpenSettings }: Props) {
+  const activeSubtitle = TABS.find((t) => t.id === active)?.subtitle ?? ''
+
   return (
     <header className="flex items-center justify-between h-14 px-4 border-b border-shadow/60 bg-panel/60 shrink-0">
       <div className="flex items-center gap-6">
@@ -26,11 +28,15 @@ export default function TopNav({ active, onChange, characterName, title, level, 
               key={tab.id}
               className={`tab-item ${active === tab.id ? 'active' : ''}`}
               onClick={() => onChange(tab.id)}
+              title={tab.subtitle}
             >
               {tab.label}
             </button>
           ))}
         </nav>
+        <span className="hidden md:inline font-mono text-[10px] text-meta border-l border-shadow/60 pl-3">
+          {activeSubtitle}
+        </span>
       </div>
 
       <div className="flex items-center gap-4">

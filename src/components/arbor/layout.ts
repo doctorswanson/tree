@@ -1,5 +1,5 @@
 import type { Node, Edge } from '@xyflow/react'
-import type { BoughState } from '@/engine/types'
+import type { BoughState, BranchState, NodeState } from '@/engine/types'
 
 const BOUGH_RADIUS = 520
 const BRANCH_RADIUS = 170
@@ -8,12 +8,17 @@ const NODE_RADIUS = 100
 export type ArborNodeData =
   | { kind: 'root' }
   | { kind: 'bough'; bough: BoughState }
-  | { kind: 'branch'; name: string; boughColor: string }
-  | { kind: 'node'; node: BoughState['branches'][number]['nodes'][number]; boughColor: string }
+  | { kind: 'branch'; branch: BranchState; boughColor: string }
+  | { kind: 'node'; node: NodeState; boughColor: string }
 
-export function buildArborGraph(boughs: BoughState[]): { nodes: Node<ArborNodeData>[]; edges: Edge[] } {
+export type ArborEdgeData =
+  | { kind: 'root-bough'; boughId: string }
+  | { kind: 'bough-branch'; boughId: string; branchId: string }
+  | { kind: 'branch-node'; boughId: string; branchId: string; nodeId: string }
+
+export function buildArborGraph(boughs: BoughState[]): { nodes: Node<ArborNodeData>[]; edges: Edge<ArborEdgeData>[] } {
   const nodes: Node<ArborNodeData>[] = []
-  const edges: Edge[] = []
+  const edges: Edge<ArborEdgeData>[] = []
 
   nodes.push({
     id: 'root',
@@ -43,7 +48,8 @@ export function buildArborGraph(boughs: BoughState[]): { nodes: Node<ArborNodeDa
       source: 'root',
       target: `bough-${bough.id}`,
       type: 'straight',
-      style: { stroke: bough.color, strokeOpacity: 0.25, strokeWidth: 1.5 },
+      data: { kind: 'root-bough', boughId: bough.id },
+      style: { stroke: bough.color },
     })
 
     const branchCount = bough.branches.length
@@ -59,7 +65,7 @@ export function buildArborGraph(boughs: BoughState[]): { nodes: Node<ArborNodeDa
         id: `branch-${branch.id}`,
         type: 'branchNode',
         position: { x: bxx, y: byy },
-        data: { kind: 'branch', name: branch.name, boughColor: bough.color },
+        data: { kind: 'branch', branch, boughColor: bough.color },
         draggable: false,
         selectable: false,
       })
@@ -68,7 +74,8 @@ export function buildArborGraph(boughs: BoughState[]): { nodes: Node<ArborNodeDa
         source: `bough-${bough.id}`,
         target: `branch-${branch.id}`,
         type: 'straight',
-        style: { stroke: bough.color, strokeOpacity: 0.2, strokeWidth: 1 },
+        data: { kind: 'bough-branch', boughId: bough.id, branchId: branch.id },
+        style: { stroke: bough.color },
       })
 
       const nodeCount = branch.nodes.length
@@ -92,7 +99,8 @@ export function buildArborGraph(boughs: BoughState[]): { nodes: Node<ArborNodeDa
           source: `branch-${branch.id}`,
           target: node.id,
           type: 'straight',
-          style: { stroke: bough.color, strokeOpacity: 0.15, strokeWidth: 1 },
+          data: { kind: 'branch-node', boughId: bough.id, branchId: branch.id, nodeId: node.id },
+          style: { stroke: bough.color },
         })
       })
     })

@@ -1,19 +1,30 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
 import type { BoughState } from '@/engine/types'
+import { FOCUS_OPACITY, DIM_MULTIPLIER } from '../visual'
 
-type Data = { kind: 'bough'; bough: BoughState }
+type Data = { kind: 'bough'; bough: BoughState; dim?: boolean }
 
 export default function BoughNode({ data, selected }: NodeProps<Node<Data>>) {
-  const { bough } = data
+  const { bough, dim } = data
   const pct = bough.totalNodes === 0 ? 0 : Math.round((bough.nodesMaxed / bough.totalNodes) * 100)
+  const baseOpacity = FOCUS_OPACITY[bough.focusState]
+  const opacity = dim ? baseOpacity * DIM_MULTIPLIER : baseOpacity
+  const glow = dim
+    ? 'none'
+    : selected
+      ? `0 0 24px ${bough.color}99`
+      : bough.focusState === 'active'
+        ? `0 0 14px ${bough.color}55`
+        : `0 0 6px ${bough.color}22`
 
   return (
     <div
-      className="relative flex flex-col items-center justify-center w-28 h-28 rounded-full cursor-pointer transition-transform hover:scale-105"
+      className="relative flex flex-col items-center justify-center w-28 h-28 rounded-full cursor-pointer transition-all hover:scale-105"
       style={{
+        opacity,
         background: `radial-gradient(circle, ${bough.color}22 0%, #0d111799 70%)`,
-        border: `2px solid ${bough.color}${selected ? 'ff' : '88'}`,
-        boxShadow: selected ? `0 0 24px ${bough.color}66` : `0 0 10px ${bough.color}33`,
+        border: `2px solid ${bough.color}${selected ? 'ff' : bough.focusState === 'active' ? 'aa' : '55'}`,
+        boxShadow: glow,
       }}
     >
       <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />

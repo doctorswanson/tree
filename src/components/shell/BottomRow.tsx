@@ -16,7 +16,11 @@ export default function BottomRow({ character, state }: Props) {
       <div className="flex flex-col min-h-0">
         <p className="panel-title px-3 py-2 border-b border-shadow/40">System Log</p>
         <div className="flex-1 overflow-y-auto scroll-area px-3 py-2 font-mono text-[11px] text-mist leading-relaxed">
-          {recent.length === 0 && <p className="text-meta">No activity yet.</p>}
+          {recent.length === 0 && (
+            <p className="text-meta">
+              <span className="text-accent">$</span> awaiting input… select a node in the Arbor and log it to start the trace.
+            </p>
+          )}
           {recent.map((item) => (
             <p key={item.id}>
               <span className="text-accent">$</span> log {item.node?.id ?? 'unknown'}
@@ -30,7 +34,11 @@ export default function BottomRow({ character, state }: Props) {
       <div className="flex flex-col min-h-0">
         <p className="panel-title px-3 py-2 border-b border-shadow/40">Recent Activity</p>
         <div className="flex-1 overflow-y-auto scroll-area px-3 py-2 flex flex-col gap-1.5">
-          {recent.length === 0 && <p className="font-mono text-[11px] text-meta">Nothing logged yet.</p>}
+          {recent.length === 0 && (
+            <p className="font-mono text-[11px] text-meta leading-relaxed">
+              Nothing logged yet — click any node and hit <span className="text-accent">Log Entry</span> to start your history.
+            </p>
+          )}
           {recent.map((item) => (
             <div key={item.id} className="flex items-center justify-between gap-2">
               <span className="font-body text-xs text-starlight truncate" style={{ color: item.node?.boughColor }}>
@@ -46,7 +54,11 @@ export default function BottomRow({ character, state }: Props) {
       <div className="flex flex-col min-h-0">
         <p className="panel-title px-3 py-2 border-b border-shadow/40">On Deck</p>
         <div className="flex-1 overflow-y-auto scroll-area px-3 py-2 flex flex-col gap-1.5">
-          {deck.length === 0 && <p className="font-mono text-[11px] text-meta">Log a node to start a streak.</p>}
+          {deck.length === 0 && (
+            <p className="font-mono text-[11px] text-meta leading-relaxed">
+              Log a node once and we'll surface whatever's closest to its next rank — right here.
+            </p>
+          )}
           {deck.map(({ node, remaining }) => (
             <div key={node.id} className="flex items-center justify-between gap-2">
               <span className="font-body text-xs text-starlight truncate" style={{ color: node.boughColor }}>

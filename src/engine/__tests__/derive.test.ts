@@ -71,3 +71,27 @@ describe('deriveCharacter — unknown nodeId is ignored, not thrown', () => {
   const log: LogEntry[] = [makeEntry('does-not-exist')]
   it('does not throw', () => expect(() => deriveCharacter('Tyler', undefined, log)).not.toThrow())
 })
+
+describe('deriveCharacter — focus state model', () => {
+  const log: LogEntry[] = [makeEntry(repeatableNode.id), makeEntry(repeatableNode.id)]
+  const state = deriveCharacter('Tyler', undefined, log)
+
+  it('every node gets a focusState', () => {
+    for (const n of Object.values(state.nodes)) expect(['locked', 'available', 'active']).toContain(n.focusState)
+  })
+  it('a node with progress is active', () => {
+    expect(state.nodes[repeatableNode.id].focusState).toBe('active')
+  })
+  it('a bough with progress is active, untouched boughs are available', () => {
+    for (const b of state.boughs) {
+      expect(b.focusState).toBe(b.totalXP > 0 ? 'active' : 'available')
+    }
+  })
+  it('every branch gets a progression layer', () => {
+    for (const b of state.boughs) {
+      for (const branch of b.branches) {
+        expect(['fundamentals', 'applied', 'advanced', 'mastery']).toContain(branch.layer)
+      }
+    }
+  })
+})
